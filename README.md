@@ -1,4 +1,4 @@
-# CRIISP MDRO Internship Portfolio
+# MDRO Colonization and Persistence
 
 This repository packages a summer research internship project on multidrug-resistant organism persistence, clearance, and acquisition in nursing home residents into a GitHub-friendly portfolio. It focuses on the technical analysis work: data wrangling in R/Quarto, outcome derivation, intervention-aware subgroup analysis, and poster-quality visualization.
 
