@@ -9,7 +9,7 @@ The portfolio emphasizes the coding and analysis workflow rather than the full r
 1. How often do pre-existing versus newly acquired MDROs persist during follow-up?
 2. How often do persistent organisms clear, and how do those rates vary by organism?
 3. How does intervention status change the way these outcomes are summarized and compared?
-4. How can these findings be translated into publication-style figures and poster visuals?
+4. How does co-colonization RGNB affects resistence of gram negative bacteria?
 
 # Repository Guide
 
