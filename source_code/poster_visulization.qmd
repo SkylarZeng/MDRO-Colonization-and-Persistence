@@ -1,0 +1,353 @@
+---
+title: "Visulization"
+format: html
+editor: source
+---
+# Figure 1 Sample Size
+## Pre-existing Colonization
+```{r}
+# Load necessary libraries
+library(ggplot2)
+library(dplyr)
+
+# Data for Persistent vs. Intermittent
+data_persistent_vs_intermittent <- data.frame(
+  Category = rep(c("RGNB", "MRSA", "VRE"), each = 2),
+  Status = rep(c("Intermittent", "Persistent"), times = 3),
+  Count = c(24, 64, 11, 33, 20, 75),
+  Facet = "Persistent vs. Intermittent"
+)
+
+# Data for Cleared vs. Not Cleared in Persistent cases
+data_cleared_vs_not_cleared <- data.frame(
+  Category = rep(c("RGNB", "MRSA", "VRE"), each = 2),
+  Status = rep(c("Not Cleared", "Cleared"), times = 3),
+  Count = c(58, 6, 29, 4, 62, 13),
+  Facet = "Cleared vs. Not Cleared (with Persistence)"
+)
+
+# Combine both datasets
+data_combined <- bind_rows(data_persistent_vs_intermittent, data_cleared_vs_not_cleared)
+
+# Ensure the correct order of facets
+data_combined$Facet <- factor(data_combined$Facet, levels = c("Persistent vs. Intermittent", "Cleared vs. Not Cleared (with Persistence)"))
+
+# Ensure the correct order of categories
+data_combined$Category <- factor(data_combined$Category, levels = c("RGNB", "MRSA", "VRE"))
+
+# Calculate percentages
+data_combined <- data_combined %>%
+  group_by(Category, Facet) %>%
+  mutate(Percentage = Count / sum(Count) * 100)
+
+# Creating the facet plot with specified colors and order
+plot_pre_existing <- ggplot(data_combined, aes(x = Category, y = Count, fill = Status)) +
+  geom_bar(stat = "identity", position = "stack") +
+  geom_text(aes(label = paste0(Count, " (", round(Percentage, 1), "%)")),
+            position = position_stack(vjust = 0.5), color = "white", size = 3) +
+  labs(title = "Pre-existing Colonization MDRO Persistence and Clearance",
+       x = "Categories", 
+       y = "Number of Residents") +
+  scale_fill_manual(values = c(
+    "Persistent" = rgb(55, 103, 149, maxColorValue = 255),
+    "Intermittent" = rgb(114, 188, 213, maxColorValue = 255),
+    "Cleared" = rgb(231, 98, 84, maxColorValue = 255),
+    "Not Cleared" = rgb(255, 208, 111, maxColorValue = 255)
+  ), 
+  breaks = c("Persistent", "Intermittent", "Cleared", "Not Cleared")) +  # Adjust the order of the legend
+  facet_wrap(~ Facet, ncol = 1) +  # Create facets with one column
+  theme_minimal() +
+  theme(legend.position = "none")
+plot_pre_existing
+# Set the file name and the desired resolution
+output_file <- "plot_new_preexisting.png"
+resolution <- 600  # DPI (dots per inch)
+
+# Save the plot to a PNG file with the specified resolution
+ggsave(filename = output_file, plot = plot_pre_existing, dpi = resolution, width = 20, height = 32, units = "in")
+
+```
+## New acquisition
+```{r}
+# Load necessary libraries
+library(ggplot2)
+library(dplyr)
+
+# Data for Persistent vs. Intermittent
+data_persistent_vs_intermittent <- data.frame(
+  Category = rep(c("RGNB", "MRSA", "VRE"), each = 2),
+  Status = rep(c("Intermittent", "Persistent"), times = 3),
+  Count = c(13, 20, 11, 12, 10, 10),
+  Facet = "Persistent vs. Intermittent"
+)
+
+# Data for Cleared vs. Not Cleared in Persistent cases
+data_cleared_vs_not_cleared <- data.frame(
+  Category = rep(c("RGNB", "MRSA", "VRE"), each = 2),
+  Status = rep(c("Not Cleared", "Cleared"), times = 3),
+  Count = c(14, 6, 10, 0, 8, 2),
+  Facet = "Cleared vs. Not Cleared (with Persistence)"
+)
+
+# Combine both datasets
+data_combined <- bind_rows(data_persistent_vs_intermittent, data_cleared_vs_not_cleared)
+
+# Ensure the correct order of facets
+data_combined$Facet <- factor(data_combined$Facet, levels = c("Persistent vs. Intermittent", "Cleared vs. Not Cleared (with Persistence)"))
+
+# Ensure the correct order of categories
+data_combined$Category <- factor(data_combined$Category, levels = c("RGNB", "MRSA", "VRE"))
+
+# Calculate percentages
+data_combined <- data_combined %>%
+  group_by(Category, Facet) %>%
+  mutate(Percentage = Count / sum(Count) * 100)
+
+# Creating the facet plot with specified colors and order
+plot_new_acquisition <- ggplot(data_combined, aes(x = Category, y = Count, fill = Status)) +
+  geom_bar(stat = "identity", position = "stack") +
+  geom_text(aes(label = paste0(Count, " (", round(Percentage, 1), "%)")),
+            position = position_stack(vjust = 0.5), color = "white", size = 3) +
+  labs(title = "New Acquisition MDRO Persistence and Clearance",
+       x = "Categories", 
+       y = "Number of Residents") +
+  scale_fill_manual(values = c(
+    "Persistent" = rgb(55, 103, 149, maxColorValue = 255),
+    "Intermittent" = rgb(114, 188, 213, maxColorValue = 255),
+    "Cleared" = rgb(231, 98, 84, maxColorValue = 255),
+    "Not Cleared" = rgb(255, 208, 111, maxColorValue = 255)
+  ), 
+  breaks = c("Persistent", "Intermittent", "Cleared", "Not Cleared")) +  # Adjust the order of the legend
+  facet_wrap(~ Facet, ncol = 1) +  # Create facets with one column
+  theme_minimal()
+plot_new_acquisition
+# Set the file name and the desired resolution
+output_file <- "plot_new_acquisition.png"
+resolution <- 600  # DPI (dots per inch)
+
+# Save the plot to a PNG file with the specified resolution
+ggsave(filename = output_file, plot = plot_new_acquisition, dpi = resolution, width = 24, height = 32, units = "in")
+
+```
+## Combine and export two graphs
+```{r}
+# Data for Pre-existing Colonization: Persistent vs. Intermittent
+data_pre_existing_persistent_vs_intermittent <- data.frame(
+  Category = rep(c("RGNB", "MRSA", "VRE"), each = 2),
+  Status = rep(c("Intermittent", "Persistent"), times = 3),
+  Count = c(24, 64, 11, 33, 20, 75),
+  Facet = "Pre-existing: Persistent vs. Intermittent"
+)
+
+# Data for Pre-existing Colonization: Cleared vs. Not Cleared in Persistent cases
+data_pre_existing_cleared_vs_not_cleared <- data.frame(
+  Category = rep(c("RGNB", "MRSA", "VRE"), each = 2),
+  Status = rep(c("Not Cleared", "Cleared"), times = 3),
+  Count = c(58, 6, 29, 4, 62, 13),
+  Facet = "Pre-existing: Cleared vs. Not Cleared"
+)
+
+# Data for New Acquisition: Persistent vs. Intermittent
+data_new_acquisition_persistent_vs_intermittent <- data.frame(
+  Category = rep(c("RGNB", "MRSA", "VRE"), each = 2),
+  Status = rep(c("Intermittent", "Persistent"), times = 3),
+  Count = c(13, 20, 11, 12, 10, 10),
+  Facet = "New Acquisition: Persistent vs. Intermittent"
+)
+
+# Data for New Acquisition: Cleared vs. Not Cleared in Persistent cases
+data_new_acquisition_cleared_vs_not_cleared <- data.frame(
+  Category = rep(c("RGNB", "MRSA", "VRE"), each = 2),
+  Status = rep(c("Not Cleared", "Cleared"), times = 3),
+  Count = c(14, 6, 10, 0, 8, 2),
+  Facet = "New Acquisition: Cleared vs. Not Cleared"
+)
+
+# Combine all datasets
+data_combined <- bind_rows(
+  data_pre_existing_persistent_vs_intermittent,
+  data_pre_existing_cleared_vs_not_cleared,
+  data_new_acquisition_persistent_vs_intermittent,
+  data_new_acquisition_cleared_vs_not_cleared
+)
+
+# Ensure the correct order of facets and categories
+data_combined$Facet <- factor(data_combined$Facet, levels = c(
+  "Pre-existing: Persistent vs. Intermittent", 
+  "Pre-existing: Cleared vs. Not Cleared",
+  "New Acquisition: Persistent vs. Intermittent",
+  "New Acquisition: Cleared vs. Not Cleared"
+))
+
+data_combined$Category <- factor(data_combined$Category, levels = c("RGNB", "MRSA", "VRE"))
+
+# Calculate percentages
+data_combined <- data_combined %>%
+  group_by(Category, Facet) %>%
+  mutate(Percentage = Count / sum(Count) * 100)
+
+# Original colors
+original_colors <- c(
+  "Persistent" = rgb(55, 103, 149, maxColorValue = 255),
+  "Intermittent" = rgb(114, 188, 213, maxColorValue = 255),
+  "Cleared" = rgb(231, 98, 84, maxColorValue = 255),
+  "Not Cleared" = rgb(255, 208, 111, maxColorValue = 255)
+)
+
+# Creating the combined plot with facets and a single legend
+combined_plot <- ggplot(data_combined, aes(x = Category, y = Count, fill = Status)) +
+  geom_bar(stat = "identity", position = "stack") +
+  geom_text(aes(label = paste0(Count, " (", round(Percentage, 1), "%)")),
+            position = position_stack(vjust = 0.5), color = "white", size = 3) +
+  labs(title = "MDRO Persistence and Clearance: Pre-existing vs. New Acquisition",
+       x = "Categories", 
+       y = "Number of Residents") +
+  scale_fill_manual(values = original_colors, 
+                    breaks = c("Persistent", "Intermittent", "Cleared", "Not Cleared")) +
+  facet_wrap(~ Facet, ncol = 2) +  # Arrange facets in two columns
+  theme_minimal()
+
+# Save the plot to a high-resolution PNG file
+ggsave(filename = "combined_plot_high_resolution.png", 
+       plot = combined_plot, 
+       dpi = 1200, 
+       width = 32, 
+       height = 24, 
+       units = "in")
+```
+
+```{r}
+# Load necessary libraries
+library(ggplot2)
+library(dplyr)
+library(gridExtra)
+
+# Data for Pre-existing Colonization
+data_pre_existing <- data.frame(
+  Condition = factor(c("RGNB (N=88)", "MRSA (N=44)", "VRE (N=95)"), 
+                     levels = c("RGNB (N=88)", "MRSA (N=44)", "VRE (N=95)")),
+  Persistence = c(72.7, 75.0, 78.9),
+  Lower_CI = c(62.0, 59.4, 69.1),
+  Upper_CI = c(81.4, 86.3, 86.4)
+)
+
+# Data for New Acquisition
+data_new_acquisition <- data.frame(
+  Condition = factor(c("RGNB (N=33)", "MRSA (N=12)", "VRE (N=20)"), 
+                     levels = c("RGNB (N=33)", "MRSA (N=12)", "VRE (N=20)")),
+  Persistence = c(60.6, 83.3, 50.0),
+  Lower_CI = c(42.2, 50.9, 29.9),
+  Upper_CI = c(76.6, 97.1, 70.1)
+)
+
+# Custom color mapping
+color_mapping <- c("RGNB (N=88)" = "lightpink", "MRSA (N=44)" = "sandybrown", "VRE (N=95)" = "lightskyblue",
+                   "RGNB (N=33)" = "lightpink", "MRSA (N=12)" = "sandybrown", "VRE (N=20)" = "lightskyblue")
+
+# Create the Pre-existing Colonization Plot
+pre_existing_plot <- ggplot(data_pre_existing, aes(x=Condition, y=Persistence, fill=Condition)) +
+  geom_bar(stat="identity", color="black") +
+  geom_errorbar(aes(ymin=Lower_CI, ymax=Upper_CI), width=0.2) +
+  labs(y="Proportion (95% CI)", x="") +
+  ggtitle("Pre-existing Colonization") +
+  theme_minimal() +
+  theme(
+    legend.position="none",
+    plot.title = element_text(hjust = 0.5),  # Center the title
+    axis.title.y = element_text(margin = margin(t = 0, r = 20, b = 0, l = 0))  # Space for y-axis title
+  ) +
+  scale_y_continuous(limits = c(0, 100)) +
+  scale_fill_manual(values=color_mapping)
+
+# Create the New Acquisition Plot
+new_acquisition_plot <- ggplot(data_new_acquisition, aes(x=Condition, y=Persistence, fill=Condition)) +
+  geom_bar(stat="identity", color="black") +
+  geom_errorbar(aes(ymin=Lower_CI, ymax=Upper_CI), width=0.2) +
+  labs(y="Proportion (95% CI)", x="") +
+  ggtitle("New Acquisition") +
+  theme_minimal() +
+  theme(
+    legend.position="none",
+    plot.title = element_text(hjust = 0.5),  # Center the title
+    axis.title.y = element_blank()           # Remove y-axis title
+  ) +
+  scale_y_continuous(limits = c(0, 100)) +
+  scale_fill_manual(values=color_mapping)
+
+# Combine the plots
+combined_plot <- grid.arrange(pre_existing_plot, new_acquisition_plot, ncol=2)
+
+# Export the combined plot with specific dimensions and DPI
+ggsave("combined_plot.png", combined_plot, width = 12, height = 6, dpi = 300)
+```
+```{r}
+# Load necessary libraries
+library(ggplot2)
+library(dplyr)
+library(gridExtra)
+
+# Data for Pre-existing Colonization with customized x-axis labels
+data_pre_existing <- data.frame(
+  Condition = factor(c("RGNB (N=88)", "MRSA (N=44)", "VRE (N=95)"), 
+                     levels = c("RGNB (N=88)", "MRSA (N=44)", "VRE (N=95)")),
+  Persistence = c(64, 33, 75),
+  Lower_CI = c(56, 27, 67),  # Example lower confidence intervals
+  Upper_CI = c(72, 39, 83),  # Example upper confidence intervals
+  Percentage = c("72.7%", "75.0%", "78.9%")  # Example percentage labels
+)
+
+# Data for New Acquisition with customized x-axis labels
+data_new_acquisition <- data.frame(
+  Condition = factor(c("RGNB (N=33)", "MRSA (N=12)", "VRE (N=20)"), 
+                     levels = c("RGNB (N=33)", "MRSA (N=12)", "VRE (N=20)")),
+  Persistence = c(20, 10, 10),
+  Lower_CI = c(14, 7, 6),  # Example lower confidence intervals
+  Upper_CI = c(26, 13, 14), # Example upper confidence intervals
+  Percentage = c("60.6%", "83.3%", "50%")  # Example percentage labels
+)
+
+# Custom color mapping
+color_mapping <- c("RGNB (N=88)" = "lightpink", "MRSA (N=44)" = "burlywood1", "VRE (N=95)" = "lightskyblue",
+                   "RGNB (N=33)" = "lightpink", "MRSA (N=12)" = "burlywood1", "VRE (N=20)" = "lightskyblue")
+
+# Create the Pre-existing Colonization Plot
+pre_existing_plot <- ggplot(data_pre_existing, aes(x=Condition, y=Persistence, fill=Condition)) +
+  geom_bar(stat="identity", color="black") +
+  geom_errorbar(aes(ymin=Lower_CI, ymax=Upper_CI), width=0.2) +
+  geom_text(aes(label=paste(Persistence, "(", Percentage, ")")), 
+            position = position_stack(vjust = 0.3), color="black") +
+  labs(y="Persistence", x="") +
+  ggtitle("Pre-existing Colonization") +
+  theme_minimal() +
+  theme(
+    legend.position="none",
+    plot.title = element_text(hjust = 0.5),  # Center the title
+    axis.title.y = element_blank()           # Remove y-axis title
+  ) +
+  scale_y_continuous(limits = c(0, 100)) +
+  scale_fill_manual(values=color_mapping)
+
+# Create the New Acquisition Plot
+new_acquisition_plot <- ggplot(data_new_acquisition, aes(x=Condition, y=Persistence, fill=Condition)) +
+  geom_bar(stat="identity", color="black") +
+  geom_errorbar(aes(ymin=Lower_CI, ymax=Upper_CI), width=0.2) +
+  geom_text(aes(label=paste(Persistence, "(", Percentage, ")")), 
+            position = position_stack(vjust = 0.3), color="black") +
+  labs(y="Persistence", x="") +
+  ggtitle("New Acquisition") +
+  theme_minimal() +
+  theme(
+    legend.position="none",
+    plot.title = element_text(hjust = 0.5),  # Center the title
+    axis.title.y = element_blank()           # Remove y-axis title
+  ) +
+  scale_y_continuous(limits = c(0, 100)) +
+  scale_fill_manual(values=color_mapping)
+
+# Combine the plots
+combined_plot <- grid.arrange(pre_existing_plot, new_acquisition_plot, ncol=2)
+
+# Export the combined plot with specific dimensions and DPI
+ggsave("combined_plot.png", combined_plot, width = 12, height = 6, dpi = 300)
+```
+

@@ -1,0 +1,10 @@
+level,bucket_group_patient,resistance_type,total_N,ctcr,cipr,imir,caz_pct,cip_pct,ipm_pct
+by swab,1,CAZ,46,16,15,15,34.779999,32.610001,32.610001
+by swab,2,CAZ,25,2,2,2,8,8,8
+by swab,3,CAZ,16,7,9,8,43.75,56.25,50
+non-redundant by patient,1,CAZ,33,10,9,9,30.299999,27.27,27.27
+non-redundant by patient,2,CAZ,14,2,2,2,14.29,14.29,14.29
+non-redundant by patient,3,CAZ,15,7,8,7,46.669998,53.330002,46.669998
+non-redundant by visit,1,CAZ,38,13,12,12,34.209999,31.58,31.58
+non-redundant by visit,2,CAZ,21,2,2,2,9.5200005,9.5200005,9.5200005
+non-redundant by visit,3,CAZ,16,7,9,8,43.75,56.25,50

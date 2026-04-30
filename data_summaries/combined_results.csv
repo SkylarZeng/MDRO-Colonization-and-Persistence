@@ -1,0 +1,4 @@
+bucket_group_environment,swab_count,ctcr_swab_count,cipr_swab_count,imir_swab_count,visit_count,ctcr_visit_count,cipr_visit_count,imir_visit_count,patient_count,ctcr_patient_count,cipr_patient_count,imir_patient_count
+1,28,12,2,18,23,7,2,13,23,7,2,13
+2,11,1,0,0,11,1,0,0,7,1,0,0
+3,4,1,1,2,4,1,1,2,2,0,0,1

@@ -1,0 +1,306 @@
+---
+title: "New poster visualization"
+author: "Skylar Zeng"
+format: html
+---
+
+# First result 
+```{r}
+# Load necessary libraries
+library(ggplot2)
+library(dplyr)
+
+# Data for persistence
+data_persistence <- data.frame(
+  organism = rep(c("RGNB", "MRSA", "VRE"), times = 2),
+  measure = factor(rep(c("Pre-existing Colonization", "New Acquisition"), each = 3), levels = c("Pre-existing Colonization", "New Acquisition")),
+  proportion = c(72.7, 75.0, 78.9, 60.6, 83.3, 50.0),
+  lower_ci = c(62.0, 59.4, 69.1, 42.2, 50.9, 29.9),
+  upper_ci = c(81.4, 86.3, 86.4, 76.6, 97.1, 70.1)
+)
+
+# Data for clearance
+data_clearance <- data.frame(
+  organism = rep(c("RGNB", "MRSA", "VRE"), times = 2),
+  measure = factor(rep(c("Pre-existing Colonization", "New Acquisition"), each = 3), levels = c("Pre-existing Colonization", "New Acquisition")),
+  proportion = c(35.7, 50.0, 71.4, 50.0 , 0.0, 50.0),
+  lower_ci = c(10.6, 1.0, 47.8, 10.0, 0.0, -19.3),
+  upper_ci = c(60.8, 99.0, 95.1, 90.0, 0.0, 119.3)
+)
+
+# Function to plot proportions with custom y-axis limits
+plot_proportions <- function(data, title, y_max = 100) {
+  ggplot(data, aes(x = organism, y = proportion, fill = measure)) +
+    geom_bar(stat = "identity", position = position_dodge(width = 0.9), color = "black", width = 0.7) +
+    geom_errorbar(aes(ymin = lower_ci, ymax = upper_ci), width = 0.2, position = position_dodge(width = 0.9)) +
+    geom_text(aes(label = round(proportion, 1), y = proportion / 2), 
+              position = position_dodge(width = 0.9), 
+              vjust = 0.5, size = 3, color = "white") +
+    labs(
+      title = title,
+      x = "Organism",
+      y = "Proportion (95% CI)"
+    ) +
+    theme_minimal() +
+    scale_fill_manual(values = c("Pre-existing Colonization" = "blue", "New Acquisition" = "orange"))
+}
+
+# Plot for persistence
+plot_persistence <- plot_proportions(data_persistence, "Proportions for Persistence", y_max = 100)
+
+# Plot for clearance
+plot_clearance <- plot_proportions(data_clearance, "Proportions for Clearance", y_max = 100)
+
+# Print the plots
+print(plot_persistence)
+print(plot_clearance)
+
+# Save the plots to files
+ggsave("persistence_bar.png", plot = plot_persistence, width = 8, height = 6, dpi = 300)
+ggsave("clearance_bar.png", plot = plot_clearance, width = 8, height = 6, dpi = 300)
+```
+```{r}
+# Load necessary libraries
+library(ggplot2)
+library(dplyr)
+
+# Data for persistence
+data_persistence <- data.frame(
+  organism = rep(c("RGNB", "MRSA", "VRE"), times = 2),
+  measure = factor(rep(c("Pre-existing Colonization", "New Acquisition"), each = 3), levels = c("Pre-existing Colonization", "New Acquisition")),
+  proportion = c(72.7, 75.0, 78.9, 60.6, 83.3, 50.0),
+  lower_ci = c(62.0, 59.4, 69.1, 42.2, 50.9, 29.9),
+  upper_ci = c(81.4, 86.3, 86.4, 76.6, 97.1, 70.1)
+)
+
+# Data for clearance
+data_clearance <- data.frame(
+  organism = rep(c("RGNB", "MRSA", "VRE"), times = 2),
+  measure = factor(rep(c("Pre-existing Colonization", "New Acquisition"), each = 3), levels = c("Pre-existing Colonization", "New Acquisition")),
+  proportion = c(35.7, 50.0, 71.4, 50.0 , 0.0, 50.0),
+  lower_ci = c(10.6, 1.0, 47.8, 10.0, 0.0, -19.3),
+  upper_ci = c(60.8, 99.0, 95.1, 90.0, 0.0, 119.3)
+)
+
+# Function to plot proportions with bars grouped by measure
+plot_proportions_grouped <- function(data, title, y_max = 100) {
+  ggplot(data, aes(x = measure, y = proportion, fill = measure)) +
+    geom_bar(stat = "identity", position = "dodge", color = "black", width = 0.7) +
+    geom_errorbar(aes(ymin = lower_ci, ymax = upper_ci), width = 0.2, position = position_dodge(width = 0.9)) +
+    geom_text(aes(label = round(proportion, 1), y = proportion / 2), 
+              position = position_dodge(width = 0.9), 
+              vjust = 0.5, size = 3, color = "white") +
+    facet_wrap(~organism, nrow = 1) +  # Group by organism, with separate plots
+    labs(
+      title = title,
+      x = "Colonization Status",
+      y = "Proportion (95% CI)"
+    ) +
+    theme_minimal() +
+    scale_fill_manual(values = c("Pre-existing Colonization" = "blue", "New Acquisition" = "orange"))
+}
+
+# Plot for persistence
+plot_persistence_grouped <- plot_proportions_grouped(data_persistence, "Proportions for Persistence", y_max = 100)
+
+# Plot for clearance
+plot_clearance_grouped <- plot_proportions_grouped(data_clearance, "Proportions for Clearance", y_max = 100)
+
+# Print the plots
+print(plot_persistence_grouped)
+print(plot_clearance_grouped)
+
+# Save the plots to files
+ggsave("persistence_grouped_bar.png", plot = plot_persistence_grouped, width = 8, height = 6, dpi = 300)
+ggsave("clearance_grouped_bar.png", plot = plot_clearance_grouped, width = 8, height = 6, dpi = 300)
+
+```
+
+```{r}
+# Load necessary libraries
+library(ggplot2)
+library(dplyr)
+
+# Data for persistence
+data_persistence <- data.frame(
+  organism = rep(c("RGNB", "MRSA", "VRE"), times = 2),
+  measure = factor(rep(c("Pre-existing Colonization", "New Acquisition"), each = 3), levels = c("Pre-existing Colonization", "New Acquisition")),
+  proportion = c(72.7, 75.0, 78.9, 60.6, 83.3, 50.0),
+  lower_ci = c(62.0, 59.4, 69.1, 42.2, 50.9, 29.9),
+  upper_ci = c(81.4, 86.3, 86.4, 76.6, 97.1, 70.1)
+)
+
+# Data for clearance
+data_clearance <- data.frame(
+  organism = rep(c("RGNB", "MRSA", "VRE"), times = 2),
+  measure = factor(rep(c("Pre-existing Colonization", "New Acquisition"), each = 3), levels = c("Pre-existing Colonization", "New Acquisition")),
+  proportion = c(35.7, 50.0, 71.4, 50.0 , 0.0, 50.0),
+  lower_ci = c(10.6, 1.0, 47.8, 10.0, 0.0, -19.3),
+  upper_ci = c(60.8, 99.0, 95.1, 90.0, 0.0, 119.3)
+)
+
+# Function to plot proportions for a specific measure (Pre-existing or New Acquisition) without a legend
+plot_proportions_by_measure_no_legend <- function(data, measure_filter, title) {
+  ggplot(data %>% filter(measure == measure_filter), aes(x = organism, y = proportion, fill = organism)) +
+    geom_bar(stat = "identity", position = "dodge", color = "black", width = 0.7) +
+    geom_errorbar(aes(ymin = lower_ci, ymax = upper_ci), width = 0.2, position = position_dodge(width = 0.9)) +
+    geom_text(aes(label = round(proportion, 1), y = proportion / 2), 
+              position = position_dodge(width = 0.9), 
+              vjust = 0.5, size = 3, color = "white") +
+    labs(
+      title = title,
+      x = "Organism",
+      y = "Proportion (95% CI)"
+    ) +
+    theme_minimal() +
+    scale_fill_manual(values = c("RGNB" = "#ADD8E6", "MRSA" = "#87CEEB", "VRE" = "#CCCCFF")) +  # Updated colors
+    theme(legend.position = "none")  # Remove the legend
+}
+
+# Plot for Pre-existing Colonization (Persistence)
+plot_pre_existing_persistence <- plot_proportions_by_measure_no_legend(data_persistence, "Pre-existing Colonization", "Rate of persistence of pre-existing MDRO colonization")
+
+# Plot for New Acquisition (Persistence)
+plot_new_acquisition_persistence <- plot_proportions_by_measure_no_legend(data_persistence, "New Acquisition", "Rate of persistence of newly acquired MDROs")
+
+# Plot for Pre-existing Colonization (Clearance)
+plot_pre_existing_clearance <- plot_proportions_by_measure_no_legend(data_clearance, "Pre-existing Colonization", "Rate of MDRO clearance during NH stay (among residents with persistent, pre-existing MDROs)")
+
+# Plot for New Acquisition (Clearance)
+plot_new_acquisition_clearance <- plot_proportions_by_measure_no_legend(data_clearance, "New Acquisition", "Rate of MDRO clearance during NH stay (among residents with persistent, newly acquired MDROs)")
+
+# Print the plots
+print(plot_pre_existing_persistence)
+print(plot_new_acquisition_persistence)
+print(plot_pre_existing_clearance)
+print(plot_new_acquisition_clearance)
+
+# Save the plots to files
+ggsave("pre_existing_persistence_no_legend.png", plot = plot_pre_existing_persistence, width = 8, height = 6, dpi = 300)
+ggsave("new_acquisition_persistence_no_legend.png", plot = plot_new_acquisition_persistence, width = 8, height = 6, dpi = 300)
+ggsave("pre_existing_clearance_no_legend.png", plot = plot_pre_existing_clearance, width = 8, height = 6, dpi = 300)
+ggsave("new_acquisition_clearance_no_legend.png", plot = plot_new_acquisition_clearance, width = 8, height = 6, dpi = 300)
+```
+```{r}
+# Load necessary libraries
+library(ggplot2)
+library(dplyr)
+
+# Data for clearance
+data_clearance <- data.frame(
+  organism = rep(c("RGNB", "MRSA", "VRE"), times = 2),
+  measure = factor(rep(c("Pre-existing Colonization", "New Acquisition"), each = 3), levels = c("Pre-existing Colonization", "New Acquisition")),
+  proportion = c(35.7, 50.0, 71.4, 50.0 , 0.0, 50.0),
+  lower_ci = c(10.6, 1.0, 47.8, 10.0, 0.0, -19.3),
+  upper_ci = c(60.8, 99.0, 95.1, 90.0, 0.0, 119.3)
+)
+
+# Function to plot proportions with a subtitle for specific measures (Pre-existing or New Acquisition)
+plot_proportions_with_subtitle <- function(data, measure_filter, title, subtitle) {
+  ggplot(data %>% filter(measure == measure_filter), aes(x = organism, y = proportion, fill = organism)) +
+    geom_bar(stat = "identity", position = "dodge", color = "black", width = 0.7) +
+    geom_errorbar(aes(ymin = lower_ci, ymax = upper_ci), width = 0.2, position = position_dodge(width = 0.9)) +
+    geom_text(aes(label = round(proportion, 1), y = proportion / 2), 
+              position = position_dodge(width = 0.9), 
+              vjust = 0.5, size = 5, color = "black") +
+    labs(
+      title = title,
+      subtitle = subtitle,  # Add subtitle here
+      x = "Organism",
+      y = "Percentage (95% CI)"
+    ) +
+    theme_minimal() +
+    xlab(NULL) + 
+    scale_fill_manual(values = c("RGNB" = "#ADD8E6", "MRSA" = "#87CEEB", "VRE" = "#CCCCFF")) +  # Updated colors
+    theme(legend.position = "none", plot.title = element_text(hjust = 0.5, size = 14), plot.subtitle = element_text(hjust = 0.5, size = 12)) +  # Adjust title and subtitle
+    ylim(0, 100)  # Set y-axis limits from 0 to 100
+}
+
+# Plot for Pre-existing Colonization (Clearance) with subtitle
+plot_pre_existing_clearance <- plot_proportions_with_subtitle(
+  data_clearance, 
+  "Pre-existing Colonization", 
+  "Rate of MDRO clearance during NH stay", 
+  "(among residents with persistent, pre-existing MDROs)"
+)
+
+# Plot for New Acquisition (Clearance) with subtitle
+plot_new_acquisition_clearance <- plot_proportions_with_subtitle(
+  data_clearance, 
+  "New Acquisition", 
+  "Rate of MDRO clearance during NH stay", 
+  "(among residents with persistent, newly acquired MDROs)"
+)
+
+# Print the plots
+print(plot_pre_existing_clearance)
+print(plot_new_acquisition_clearance)
+
+# Save the plots to files
+ggsave("pre_existing_clearance_no_legend_subtitle.png", plot = plot_pre_existing_clearance, width = 6, height = 4, dpi = 300)
+ggsave("new_acquisition_clearance_no_legend_subtitle.png", plot = plot_new_acquisition_clearance, width = 6, height = 4, dpi = 300)
+```
+
+# Load necessary libraries
+```{r}
+# Load necessary libraries
+library(ggplot2)
+library(dplyr)
+
+# Data for persistence with confidence intervals
+data_persistence <- data.frame(
+  organism = rep(c("RGNB", "MRSA", "VRE"), times = 2),
+  measure = factor(rep(c("Pre-existing Colonization", "New Acquisition"), each = 3), levels = c("Pre-existing Colonization", "New Acquisition")),
+  proportion = c(72.7, 75.0, 78.9, 60.6, 83.3, 50.0),
+  lower_ci = c(62.0, 59.4, 69.1, 42.2, 50.9, 29.9),
+  upper_ci = c(81.4, 86.3, 86.4, 76.6, 97.1, 70.1),
+  persistence_sample_size = c("64/88", "33/45", "75/95", "20/33", "10/12", "10/20")
+)
+
+# Function to plot proportions with percentages inside bars and sample sizes beside x-axis labels
+plot_proportions_with_black_text <- function(data, measure_filter, title) {
+  ggplot(data %>% filter(measure == measure_filter), aes(x = organism, y = proportion, fill = organism)) +
+    geom_bar(stat = "identity", position = "dodge", color = "black", width = 0.7) +
+    geom_errorbar(aes(ymin = lower_ci, ymax = upper_ci), width = 0.2, position = position_dodge(width = 0.9)) +
+    geom_text(aes(label = paste0(round(proportion, 1), "%"), y = proportion / 2), 
+              position = position_dodge(width = 0.9), 
+              vjust = 0.5, size = 5, color = "black") +
+    labs(
+      title = title,
+      y = "Percentage (95% CI)",
+      x = NULL  # Remove x-axis label
+    ) +
+    scale_x_discrete(labels = function(x) paste0(x, "\n(", data %>% filter(measure == measure_filter) %>% pull(persistence_sample_size), ")")) +
+    theme_minimal() +
+    scale_fill_manual(values = c("RGNB" = "#ADD8E6", "MRSA" = "#87CEEB", "VRE" = "#CCCCFF")) +
+    theme(
+      legend.position = "none",
+      plot.title = element_text(hjust = 0.5, size = 14),
+     axis.text.x = element_text(angle = 0, hjust = 0.5, size = 12, face = "bold")  # Ensure x-axis labels are centered
+    ) +
+    ylim(0, 100)
+}
+
+# Plot for Pre-existing Colonization (Persistence)
+plot_pre_existing_persistence <- plot_proportions_with_black_text(
+  data_persistence, 
+  "Pre-existing Colonization", 
+  "Rate of persistence of pre-existing MDRO colonization"
+)
+
+# Plot for New Acquisition (Persistence)
+plot_new_acquisition_persistence <- plot_proportions_with_black_text(
+  data_persistence, 
+  "New Acquisition", 
+  "Rate of persistence of newly acquired MDRO colonization"
+)
+
+# Print the plots
+print(plot_pre_existing_persistence)
+print(plot_new_acquisition_persistence)
+
+# Save the plots to files
+ggsave("pre_existing_persistence.png", plot = plot_pre_existing_persistence, width = 6, height = 4, dpi = 300)
+ggsave("new_acquisition_persistence.png", plot = plot_new_acquisition_persistence, width = 6, height = 4, dpi = 300)
+```
+

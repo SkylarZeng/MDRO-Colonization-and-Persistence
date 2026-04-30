@@ -1,0 +1,3155 @@
+---
+title: "Pathways Persistence of MDROs Analysis"
+author: "Skylar Zeng"
+date: "Last compiled on `r format(Sys.Date(), '%B %d, %Y')`"
+format:
+  docx:
+    code-overflow: wrap
+embed-resources: true
+---
+
+# Install and Load Libraries
+```{r}
+#| label: install_packages
+#| eval: false
+install.packages("readr")
+install.packages("readxl")
+install.packages("dplyr")
+install.packages("tidyr")
+install.packages("gtsummary")
+install.packages("gt")
+install.packages("sjlabelled")
+install.packages("writexl")
+install.packages("parameters")
+install.packages("bayestestR")
+install.packages("purrr")
+install.packages("ggplot2")
+install.packages("ggpubr")
+install.packages("survival")
+install.packages("ranger")
+install.packages("ggfortify")
+install.packages("survminer")
+install.packages("lmtest")
+install.packages("labelled")
+```
+
+```{r}
+#| label: load_packages
+#| message: false
+library(readr)
+library(readxl)
+library(dplyr)
+library(tidyr)
+library(gtsummary)
+library(gt)
+library(sjlabelled)
+library(writexl)
+library(parameters)
+library(bayestestR)
+library(purrr)
+library(ggplot2)
+library(ggpubr)
+library(survival)
+library(ranger)
+library(ggfortify)
+library(survminer)
+library(lmtest)
+library(labelled)
+```
+
+# Import Datasets
+```{r}
+#| label: import_dataset
+#| message: false
+Pathways_complete <- read_excel("pathwaysbothphases_0723.xlsx")
+Pathways_dictionary <- read_excel("Pathways Database Dictionary_Derived Vars in second sheet.xlsx")
+```
+## Subsets with Necessary Variables
+```{r}
+Pathway <- Pathways_complete[, c(
+    "facilID", 
+    "studyID",
+    "visit", 
+    "novisits", 
+    "phase", 
+    "newinfect",
+    "maxvisit",
+    "age_bl", 
+    "sex_bl",
+    "height_bl",
+    "weight_bl",
+    "race_bl",
+    "ethnic_bl",
+    "dtvisit", 
+    "intervention",
+    "antibiotic_bl", 
+    "feedtube", 
+    "urincath", 
+    "deviceuse", 
+    "openwound_final",
+    "cogsum_bl",
+    "homrsa_bl",
+    "hovre_bl",
+    "horgnb_bl",
+    "psmscore",
+    "anyanypos_p",
+    "anymrsa_p",
+    "anyvre_p",
+    "anygnbr_p",
+    "acqmrsa", 
+    "acqvre", 
+    "acqgnbr", 
+    "hospstay",
+    "charlson", 
+    "ccsmi_bl", 
+    "ccschf_bl", 
+    "ccspvod_bl", 
+    "ccscva_bl", 
+    "ccsdemen_bl", 
+    "ccscopd_bl", 
+    "ccscontis_bl", 
+    "ccspud_bl", 
+    "ccsmld_bl", 
+    "ccsdm_bl", 
+    "ccshemi_bl", 
+    "ccsmsrd_bl", 
+    "ccsdmeod_bl", 
+    "ccstumor_bl", 
+    "ccsleuk_bl", 
+    "ccslymph_bl", 
+    "ccsmsld_bl", 
+    "ccsmst_bl",
+    "ccsaids_bl",
+    "VREsiteE1",
+    "VREsiteE10",
+    "VREsiteE11",
+    "VREsiteE12",
+    "VREsiteE2",
+    "VREsiteE3", 
+    "VREsiteE4",
+    "VREsiteE5",
+    "VREsiteE6",
+    "VREsiteE7",
+    "VREsiteE8",
+    "VREsiteE9",
+    "VREsiteF",
+    "VREsiteG",
+    "VREsiteH",
+    "VREsiteN",
+    "VREsiteO",
+    "VREsiteR",
+    "VREsiteS",
+    "vre_p",
+    "MRSAsiteE1",
+    "MRSAsiteE10",
+    "MRSAsiteE11",
+    "MRSAsiteE12",
+    "MRSAsiteE2",
+    "MRSAsiteE3", 
+    "MRSAsiteE4",
+    "MRSAsiteE5",
+    "MRSAsiteE6",
+    "MRSAsiteE7",
+    "MRSAsiteE8",
+    "MRSAsiteE9",
+    "MRSAsiteF",
+    "MRSAsiteG",
+    "MRSAsiteH",
+    "MRSAsiteN",
+    "MRSAsiteO",
+    "MRSAsiteR",
+    "MRSAsiteS",
+    "mrsa_p",
+    "RGNBsiteE1",
+    "RGNBsiteE10",
+    "RGNBsiteE11",
+    "RGNBsiteE12",
+    "RGNBsiteE2",
+    "RGNBsiteE3",
+    "RGNBsiteE4",
+    "RGNBsiteE5",
+    "RGNBsiteE6",
+    "RGNBsiteE7",
+    "RGNBsiteE8",
+    "RGNBsiteE9",
+    "RGNBsiteF",
+    "RGNBsiteG",
+    "RGNBsiteH",
+    "RGNBsiteN",
+    "RGNBsiteO",
+    "RGNBsiteR",
+    "RGNBsiteS",
+    "gnbr_p",
+    "gnbr_env",
+    "mrsa_env",
+    "vre_env",
+    "mrsa_acq_totvisits_r",
+    "mrsa_acq_persistence",
+    "mrsa_acq_cleared",
+    "mrsa_acq_duration",
+    "mrsa_pre_totvisits_r",
+    "mrsa_pre_persistence",
+    "mrsa_pre_cleared",
+    "mrsa_pre_duration",
+    "vre_acq_totvisits_r",
+    "vre_acq_persistence",
+    "vre_acq_cleared",
+    "vre_acq_duration",
+    "vre_pre_totvisits_r",
+    "vre_pre_persistence",
+    "vre_pre_cleared",
+    "vre_pre_duration",
+    "rgnb_acq_totvisits_r",
+    "rgnb_acq_persistence",
+    "rgnb_acq_cleared",
+    "rgnb_acq_duration",
+    "rgnb_pre_totvisits_r",
+    "rgnb_pre_persistence",
+    "rgnb_pre_cleared",
+    "rgnb_pre_duration"
+)]
+```
+
+## Change labels and numbers (99 & 999)
+```{r}
+# Function to replace "99" and "999" with NA in a vector
+replace_with_na <- function(x) {
+  x <- as.character(x)  # Convert to character to handle "99" and "999"
+  x[x == "99"] <- NA
+  x[x == "999"] <- NA
+  return(x)
+}
+
+# Apply the function to all columns of the dataframe
+Pathway[] <- lapply(Pathway, replace_with_na)
+
+# Create BMI variable
+Pathway <- Pathway %>%
+  mutate(BMI = (as.numeric(weight_bl) * 703) / (as.numeric(height_bl)^2))
+
+# Create visit_intervened variable (Intervention arm are all pnts in facility 1,2,6; interventions occurred in Phase 2)
+Pathway <- Pathway %>%
+  mutate(visit_intervened = case_when(
+    phase == 1 ~ 0,
+    phase == 2 & intervention == 0 ~ 0,
+    phase == 2 & intervention == 1 ~ 1,
+  ))
+
+# Create new variable - Sex
+Pathway <- Pathway %>% 
+  mutate(Sex = case_when(sex_bl == 1 ~ "Male",
+                         sex_bl == 0 ~ "Female"))
+
+# Create new variable - Race
+Pathway <- Pathway %>% 
+  mutate(race_bl = case_when(race_bl == 1 ~ 0,
+                          race_bl == 2 ~ 1))
+Pathway <- Pathway %>% 
+  mutate(Race = case_when(race_bl == 0 ~ "White",
+                          race_bl == 1 ~ "Black or African American"))
+
+# Create new categorical variable for charlson score with <=3 and >3 classification
+Pathway$charlson_cat <- ifelse(Pathway$charlson < 3, "<3", ">=3")
+
+# Create new binary categorical variable for Body Sites colonized
+Pathway$gnbr_p_cat <- ifelse(Pathway$gnbr_p < 2, "<2", ">=2")
+Pathway$mrsa_p_cat <- ifelse(Pathway$mrsa_p < 2, "<2", ">=2")
+Pathway$vre_p_cat <- ifelse(Pathway$vre_p < 2, "<2", ">=2")
+
+# Create new binary categorical variable for hospital stay
+Pathway$hospstay_cat <- ifelse(Pathway$hospstay < 14, "<14", ">=14")
+
+# Replace persistence and cleared values with labels
+library(dplyr)
+
+# Create new categorical variable for Body Sites colonized
+# Create new binary categorical variable for Body Sites colonized
+Pathway$gnbr_env_cat <- ifelse(Pathway$gnbr_env == 0, "0", ">=1")
+Pathway$mrsa_env_cat <- ifelse(Pathway$mrsa_env == 0, "0", ">=1")
+Pathway$vre_env_cat <- ifelse(Pathway$vre_env == 0, "0", ">=1")
+
+# Create new binary variable for Diabetes
+Pathway$Diabetes <- ifelse(Pathway$ccsdmeod_bl == 1 | Pathway$ccsdm_bl == 1, 1, 0)
+Pathway$Diabetes <- as.character(Pathway$Diabetes)
+
+# Create a new variable for presence of comorbidities
+Pathway <- Pathway %>%
+  mutate(comorbidity_category = case_when(
+    ccsmi_bl == 1 ~ "Myocardial Infarction",
+    ccschf_bl == 1 ~ "Congestive Heart Failure",
+    ccspvod_bl == 1 ~ "Peripheral Vascular Dx",
+    ccscva_bl == 1 ~ "Cerebral Vascular Accident",
+    ccsdemen_bl == 1 ~ "Dementia",
+    ccscopd_bl == 1 ~ "COPD",
+    ccscontis_bl == 1 ~ "Connective Tissue Dx",
+    ccspud_bl == 1 ~ "Peptic Ulcer Dx",
+    ccsmld_bl == 1 ~ "Mild Liver Dx",
+    Diabetes == 1 ~ "Diabetes",
+    ccshemi_bl == 1 ~ "Hemiplegia",
+    ccsmsrd_bl == 1 ~ "Mod-Severe Renal Dx",
+    ccstumor_bl == 1 ~ "Any Tumor",
+    ccsleuk_bl == 1 ~ "Leukemia",
+    ccslymph_bl == 1 ~ "Lymphoma",
+    ccsmst_bl == 1 ~ "Metastatic Solid Tumor",
+    ccsaids_bl == 1 ~ "AIDS",
+    TRUE ~ "None",
+  ))
+
+# Only use Phase 1 for now
+Pathway_1 <- Pathway %>%
+  filter(phase == 1)
+
+# Filter observations without intervention
+Pathway_1_n_intervention <- Pathway_1 %>%
+  filter(visit_intervened == 0)
+
+# Calculate total residents number
+Pathway_1_n_intervention_unique <- Pathway_1_n_intervention %>%
+  distinct(studyID, .keep_all = TRUE)
+
+# Calculate the median of psmscore
+psmscore_median <- median(Pathway_1_n_intervention_unique$psmscore, na.rm = TRUE)
+psmscore_median
+# Create the new binary categorical variable
+Pathway$psmscore_cat <- ifelse(Pathway$psmscore < psmscore_median, "<14", ">=14")
+
+# Filter observations without intervention
+Pathway_1_n_intervention <- Pathway_1 %>%
+  filter(visit_intervened == 0)
+
+# Calculate total residents number
+Pathway_1_n_intervention_unique <- Pathway_1_n_intervention %>%
+  distinct(studyID, .keep_all = TRUE)
+
+# Set labels for the specified variables
+Pathway <- Pathway %>%
+  set_variable_labels(
+    age_bl = "Age",
+    Sex = "Sex",
+    Race = "Race",
+    antibiotic_bl = "Antibiotic Use",
+    charlson = "Charlson comorbidity index score",
+    charlson_cat = "Charlson comorbidity index score",
+    feedtube = "Feeding Tube Use",
+    urincath = "Urinary Catheter Use",
+    deviceuse = "Device use",
+    cogsum_bl = "Cognitive Sum Score",
+    homrsa_bl = "History of MRSA",
+    hovre_bl = "History of VRE",
+    horgnb_bl = "History of RGNB",
+    psmscore_cat = "Functional disability (PSMS Total Score)",
+    hospstay_cat = "Length of Hospitalization",
+    ccsmi_bl = "Myocardial Infarction",
+    ccschf_bl = "Congestive Heart Failure",
+    ccspvod_bl = "Peripheral Vascular Dx",
+    ccscva_bl = "Cerebral Vascular Accident",
+    ccsdemen_bl = "Dementia",
+    ccscopd_bl = "COPD",
+    ccscontis_bl = "Connective Tissue Dx",
+    ccspud_bl = "Peptic Ulcer Dx",
+    ccsmld_bl = "Mild Liver Dx",
+    Diabetes = "Diabetes",
+    ccshemi_bl = "Hemiplegia",
+    ccsmsrd_bl = "Mod-Severe Renal Dx",
+    ccstumor_bl = "Any Tumor",
+    ccsleuk_bl = "Leukemia",
+    ccslymph_bl = "Lymphoma",
+    ccsmsld_bl = "Mod-Severe Liver Dx",
+    ccsmst_bl = "Metastatic Solid Tumor",
+    ccsaids_bl = "AIDS",
+    openwound_final = "Wound",
+    visit_intervened = "Intervention",
+    comorbidity_category = "Presence of Comorbidities",
+    gnbr_env_cat = "Number of Room Surfaces Colonized",
+    mrsa_env_cat = "Number of Room Surfaces Colonized",
+    vre_env_cat = "Number of Room Surfaces Colonized",
+    gnbr_p_cat = "Number of patient sites colonization",
+    mrsa_p_cat = "Number of patient sites colonization",
+    vre_p_cat = "Number of patient sites colonization",
+    rgnb_pre_persistence = "Persistence",
+    mrsa_pre_persistence = "Persistence",
+    vre_pre_persistence = "Persistence",
+    rgnb_acq_persistence = "Persistence",
+    mrsa_acq_persistence = "Persistence",
+    vre_acq_persistence = "Persistence",
+    rgnb_pre_cleared = "Clearance",
+    mrsa_pre_cleared = "Clearance",
+    vre_pre_cleared = "Clearance",
+    rgnb_acq_cleared = "Clearance",
+    mrsa_acq_cleared = "Clearance",
+    vre_acq_cleared = "Clearance",
+  )
+```
+
+# Subset to different organisms
+```{r}
+# Subset datasets based on the presence of numbers in the persistence columns
+rgnb_pre <- subset(Pathway_1_n_intervention, !is.na(as.numeric(as.character(rgnb_pre_persistence))) & rgnb_pre_persistence != "")
+mrsa_pre <- subset(Pathway_1_n_intervention, !is.na(as.numeric(as.character(mrsa_pre_persistence))) & mrsa_pre_persistence != "")
+vre_pre <- subset(Pathway_1_n_intervention, !is.na(as.numeric(as.character(vre_pre_persistence))) & vre_pre_persistence != "")
+
+rgnb_acq <- subset(Pathway_1_n_intervention, !is.na(as.numeric(as.character(rgnb_acq_persistence))) & rgnb_acq_persistence != "")
+mrsa_acq <- subset(Pathway_1_n_intervention, !is.na(as.numeric(as.character(mrsa_acq_persistence))) & mrsa_acq_persistence != "")
+vre_acq <- subset(Pathway_1_n_intervention, !is.na(as.numeric(as.character(vre_acq_persistence))) & vre_acq_persistence != "")
+```
+
+## Colonization Subsets with different MDROs
+```{r}
+rgnb_pre <- rgnb_pre[, c(
+    "facilID", 
+    "studyID",
+    "visit", 
+    "novisits", 
+    "phase", 
+    "maxvisit",
+    "age_bl", 
+    "Sex",
+    "height_bl",
+    "weight_bl",
+    "Race",
+    "ethnic_bl",
+    "dtvisit",
+    "antibiotic_bl", 
+    "feedtube", 
+    "urincath", 
+    "deviceuse", 
+    "openwound_final",
+    "cogsum_bl",
+    "horgnb_bl",
+    "psmscore",
+    "anyanypos_p",
+    "anygnbr_p",
+    "acqgnbr", 
+    "hospstay", 
+    "charlson", 
+    "ccsmi_bl", 
+    "ccschf_bl", 
+    "ccspvod_bl", 
+    "ccscva_bl", 
+    "ccsdemen_bl", 
+    "ccscopd_bl", 
+    "ccscontis_bl", 
+    "ccspud_bl", 
+    "ccsmld_bl", 
+    "ccsdm_bl", 
+    "ccshemi_bl", 
+    "ccsmsrd_bl", 
+    "ccsdmeod_bl", 
+    "ccstumor_bl", 
+    "ccsleuk_bl", 
+    "ccslymph_bl", 
+    "ccsmsld_bl",
+    "ccsmst_bl", 
+    "ccsaids_bl",
+    "comorbidity_category",
+    "RGNBsiteE1",
+    "RGNBsiteE10",
+    "RGNBsiteE11",
+    "RGNBsiteE12",
+    "RGNBsiteE2",
+    "RGNBsiteE3",
+    "RGNBsiteE4",
+    "RGNBsiteE5",
+    "RGNBsiteE6",
+    "RGNBsiteE7",
+    "RGNBsiteE8",
+    "RGNBsiteE9",
+    "RGNBsiteF",
+    "RGNBsiteG",
+    "RGNBsiteH",
+    "RGNBsiteN",
+    "RGNBsiteO",
+    "RGNBsiteR",
+    "RGNBsiteS",
+    "gnbr_p",
+    "gnbr_p_cat",
+    "BMI",
+    "visit_intervened",
+    "charlson_cat",
+    "gnbr_env",
+    "gnbr_env_cat",
+    "rgnb_pre_totvisits_r",
+    "rgnb_pre_persistence",
+    "rgnb_pre_cleared",
+    "rgnb_pre_duration",
+    "psmscore_cat",
+    "hospstay_cat",
+    "Diabetes"
+)]
+
+mrsa_pre <- mrsa_pre[, c(
+    "facilID", 
+    "studyID",
+    "visit", 
+    "novisits", 
+    "phase", 
+    "maxvisit",
+    "age_bl", 
+    "Sex",
+    "height_bl",
+    "weight_bl",
+    "Race",
+    "ethnic_bl",
+    "dtvisit",
+    "antibiotic_bl", 
+    "feedtube", 
+    "urincath", 
+    "deviceuse", 
+    "openwound_final",
+    "cogsum_bl",
+    "homrsa_bl",
+    "psmscore",
+    "anyanypos_p",
+    "anymrsa_p",
+    "acqmrsa", 
+    "hospstay", 
+    "charlson", 
+    "ccsmi_bl", 
+    "ccschf_bl", 
+    "ccspvod_bl", 
+    "ccscva_bl", 
+    "ccsdemen_bl", 
+    "ccscopd_bl", 
+    "ccscontis_bl", 
+    "ccspud_bl", 
+    "ccsmld_bl", 
+    "ccsdm_bl", 
+    "ccshemi_bl", 
+    "ccsmsrd_bl", 
+    "ccsdmeod_bl", 
+    "ccstumor_bl", 
+    "ccsleuk_bl", 
+    "ccslymph_bl", 
+    "ccsmsld_bl",
+    "ccsmst_bl", 
+    "ccsaids_bl",
+    "comorbidity_category",
+    "MRSAsiteE1",
+    "MRSAsiteE10",
+    "MRSAsiteE11",
+    "MRSAsiteE12",
+    "MRSAsiteE2",
+    "MRSAsiteE3",
+    "MRSAsiteE4",
+    "MRSAsiteE5",
+    "MRSAsiteE6",
+    "MRSAsiteE7",
+    "MRSAsiteE8",
+    "MRSAsiteE9",
+    "MRSAsiteF",
+    "MRSAsiteG",
+    "MRSAsiteH",
+    "MRSAsiteN",
+    "MRSAsiteO",
+    "MRSAsiteR",
+    "MRSAsiteS",
+    "mrsa_p",
+    "mrsa_p_cat",
+    "BMI",
+    "visit_intervened",
+    "charlson_cat",
+    "mrsa_env",
+    "mrsa_env_cat",
+    "mrsa_pre_totvisits_r",
+    "mrsa_pre_persistence",
+    "mrsa_pre_cleared",
+    "mrsa_pre_duration",
+    "psmscore_cat",
+    "hospstay_cat",
+    "Diabetes"
+)]
+
+vre_pre <- vre_pre[, c(
+    "facilID", 
+    "studyID",
+    "visit", 
+    "novisits", 
+    "phase", 
+    "maxvisit",
+    "age_bl", 
+    "Sex",
+    "height_bl",
+    "weight_bl",
+    "Race",
+    "ethnic_bl",
+    "dtvisit",
+    "antibiotic_bl", 
+    "feedtube", 
+    "urincath", 
+    "deviceuse", 
+    "openwound_final",
+    "cogsum_bl",
+    "hovre_bl",
+    "psmscore",
+    "anyanypos_p",
+    "anyvre_p",
+    "acqvre", 
+    "hospstay", 
+    "charlson", 
+    "ccsmi_bl", 
+    "ccschf_bl", 
+    "ccspvod_bl", 
+    "ccscva_bl", 
+    "ccsdemen_bl", 
+    "ccscopd_bl", 
+    "ccscontis_bl", 
+    "ccspud_bl", 
+    "ccsmld_bl", 
+    "ccsdm_bl", 
+    "ccshemi_bl", 
+    "ccsmsrd_bl", 
+    "ccsdmeod_bl", 
+    "ccstumor_bl", 
+    "ccsleuk_bl", 
+    "ccslymph_bl", 
+    "ccsmsld_bl",
+    "ccsmst_bl", 
+    "ccsaids_bl",
+    "comorbidity_category",
+    "VREsiteE1",
+    "VREsiteE10",
+    "VREsiteE11",
+    "VREsiteE12",
+    "VREsiteE2",
+    "VREsiteE3",
+    "VREsiteE4",
+    "VREsiteE5",
+    "VREsiteE6",
+    "VREsiteE7",
+    "VREsiteE8",
+    "VREsiteE9",
+    "VREsiteF",
+    "VREsiteG",
+    "VREsiteH",
+    "VREsiteN",
+    "VREsiteO",
+    "VREsiteR",
+    "VREsiteS",
+    "vre_p",
+    "vre_p_cat",
+    "BMI",
+    "visit_intervened",
+    "charlson_cat",
+    "vre_env",
+    "vre_env_cat",
+    "vre_pre_totvisits_r",
+    "vre_pre_persistence",
+    "vre_pre_cleared",
+    "vre_pre_duration",
+    "psmscore_cat",
+    "hospstay_cat",
+    "Diabetes"
+)]
+```
+
+## New Acquisition Subsets with different MDROs
+```{r}
+rgnb_acq <- rgnb_acq[, c(
+    "facilID", 
+    "studyID",
+    "visit", 
+    "novisits", 
+    "phase", 
+    "maxvisit",
+    "age_bl", 
+    "Sex",
+    "height_bl",
+    "weight_bl",
+    "Race",
+    "ethnic_bl",
+    "dtvisit",
+    "antibiotic_bl", 
+    "feedtube", 
+    "urincath", 
+    "deviceuse", 
+    "openwound_final",
+    "cogsum_bl",
+    "horgnb_bl",
+    "psmscore",
+    "anyanypos_p",
+    "anygnbr_p",
+    "acqgnbr", 
+    "hospstay", 
+    "charlson", 
+    "ccsmi_bl", 
+    "ccschf_bl", 
+    "ccspvod_bl", 
+    "ccscva_bl", 
+    "ccsdemen_bl", 
+    "ccscopd_bl", 
+    "ccscontis_bl", 
+    "ccspud_bl", 
+    "ccsmld_bl", 
+    "ccsdm_bl", 
+    "ccshemi_bl", 
+    "ccsmsrd_bl", 
+    "ccsdmeod_bl", 
+    "ccstumor_bl", 
+    "ccsleuk_bl", 
+    "ccslymph_bl", 
+    "ccsmsld_bl",
+    "ccsmst_bl", 
+    "ccsaids_bl",
+    "comorbidity_category",
+    "RGNBsiteE1",
+    "RGNBsiteE10",
+    "RGNBsiteE11",
+    "RGNBsiteE12",
+    "RGNBsiteE2",
+    "RGNBsiteE3",
+    "RGNBsiteE4",
+    "RGNBsiteE5",
+    "RGNBsiteE6",
+    "RGNBsiteE7",
+    "RGNBsiteE8",
+    "RGNBsiteE9",
+    "RGNBsiteF",
+    "RGNBsiteG",
+    "RGNBsiteH",
+    "RGNBsiteN",
+    "RGNBsiteO",
+    "RGNBsiteR",
+    "RGNBsiteS",
+    "gnbr_p",
+    "gnbr_p_cat",
+    "BMI",
+    "visit_intervened",
+    "charlson_cat",
+    "gnbr_env",
+    "gnbr_env_cat",
+    "rgnb_acq_totvisits_r",
+    "rgnb_acq_persistence",
+    "rgnb_acq_cleared",
+    "rgnb_acq_duration",
+    "psmscore_cat",
+    "hospstay_cat",
+    "Diabetes"
+)]
+
+mrsa_acq <- mrsa_acq[, c(
+    "facilID", 
+    "studyID",
+    "visit", 
+    "novisits", 
+    "phase", 
+    "maxvisit",
+    "age_bl", 
+    "Sex",
+    "height_bl",
+    "weight_bl",
+    "Race",
+    "ethnic_bl",
+    "dtvisit",
+    "antibiotic_bl", 
+    "feedtube", 
+    "urincath", 
+    "deviceuse", 
+    "openwound_final",
+    "cogsum_bl",
+    "homrsa_bl",
+    "psmscore",
+    "anyanypos_p",
+    "anymrsa_p",
+    "acqmrsa", 
+    "hospstay", 
+    "charlson", 
+    "ccsmi_bl", 
+    "ccschf_bl", 
+    "ccspvod_bl", 
+    "ccscva_bl", 
+    "ccsdemen_bl", 
+    "ccscopd_bl", 
+    "ccscontis_bl", 
+    "ccspud_bl", 
+    "ccsmld_bl", 
+    "ccsdm_bl", 
+    "ccshemi_bl", 
+    "ccsmsrd_bl", 
+    "ccsdmeod_bl", 
+    "ccstumor_bl", 
+    "ccsleuk_bl", 
+    "ccslymph_bl", 
+    "ccsmsld_bl",
+    "ccsmst_bl", 
+    "ccsaids_bl",
+    "comorbidity_category",
+    "MRSAsiteE1",
+    "MRSAsiteE10",
+    "MRSAsiteE11",
+    "MRSAsiteE12",
+    "MRSAsiteE2",
+    "MRSAsiteE3",
+    "MRSAsiteE4",
+    "MRSAsiteE5",
+    "MRSAsiteE6",
+    "MRSAsiteE7",
+    "MRSAsiteE8",
+    "MRSAsiteE9",
+    "MRSAsiteF",
+    "MRSAsiteG",
+    "MRSAsiteH",
+    "MRSAsiteN",
+    "MRSAsiteO",
+    "MRSAsiteR",
+    "MRSAsiteS",
+    "mrsa_p",
+    "mrsa_p_cat",
+    "BMI",
+    "visit_intervened",
+    "charlson_cat",
+    "mrsa_env",
+    "mrsa_env_cat",
+    "mrsa_acq_totvisits_r",
+    "mrsa_acq_persistence",
+    "mrsa_acq_cleared",
+    "mrsa_acq_duration",
+    "psmscore_cat",
+    "hospstay_cat",
+    "Diabetes"
+)]
+
+vre_acq <- vre_acq[, c(
+    "facilID", 
+    "studyID",
+    "visit", 
+    "novisits", 
+    "phase", 
+    "maxvisit",
+    "age_bl", 
+    "Sex",
+    "height_bl",
+    "weight_bl",
+    "Race",
+    "ethnic_bl",
+    "dtvisit",
+    "antibiotic_bl", 
+    "feedtube", 
+    "urincath", 
+    "deviceuse", 
+    "openwound_final",
+    "cogsum_bl",
+    "hovre_bl",
+    "psmscore",
+    "anyanypos_p",
+    "anyvre_p",
+    "acqvre", 
+    "hospstay", 
+    "charlson", 
+    "ccsmi_bl", 
+    "ccschf_bl", 
+    "ccspvod_bl", 
+    "ccscva_bl", 
+    "ccsdemen_bl", 
+    "ccscopd_bl", 
+    "ccscontis_bl", 
+    "ccspud_bl", 
+    "ccsmld_bl", 
+    "ccsdm_bl", 
+    "ccshemi_bl", 
+    "ccsmsrd_bl", 
+    "ccsdmeod_bl", 
+    "ccstumor_bl", 
+    "ccsleuk_bl", 
+    "ccslymph_bl", 
+    "ccsmsld_bl",
+    "ccsmst_bl", 
+    "ccsaids_bl",
+    "comorbidity_category",
+    "VREsiteE1",
+    "VREsiteE10",
+    "VREsiteE11",
+    "VREsiteE12",
+    "VREsiteE2",
+    "VREsiteE3",
+    "VREsiteE4",
+    "VREsiteE5",
+    "VREsiteE6",
+    "VREsiteE7",
+    "VREsiteE8",
+    "VREsiteE9",
+    "VREsiteF",
+    "VREsiteG",
+    "VREsiteH",
+    "VREsiteN",
+    "VREsiteO",
+    "VREsiteR",
+    "VREsiteS",
+    "vre_p",
+    "vre_p_cat",
+    "BMI",
+    "visit_intervened",
+    "charlson_cat",
+    "vre_env",
+    "vre_env_cat",
+    "vre_acq_totvisits_r",
+    "vre_acq_persistence",
+    "vre_acq_cleared",
+    "vre_acq_duration",
+    "psmscore_cat",
+    "hospstay_cat",
+    "Diabetes"
+)]
+```
+
+## Adjust subset and summary the number of subsets for different MDRO
+```{r}
+# Copy labels for rgnb_pre
+rgnb_pre <- copy_labels(Pathway, rgnb_pre)
+# Copy labels for rgnb_acq
+rgnb_acq <- copy_labels(Pathway, rgnb_acq)
+# Copy labels for mrsa_pre
+mrsa_pre <- copy_labels(Pathway, mrsa_pre)
+# Copy labels for mrsa_acq
+mrsa_acq <- copy_labels(Pathway, mrsa_acq)
+# Copy labels for vre_pre
+vre_pre <- copy_labels(Pathway, vre_pre)
+# Copy labels for vre_acq
+vre_acq <- copy_labels(Pathway, vre_acq)
+
+# Apply mutations to rgnb_pre
+rgnb_pre <- rgnb_pre %>%
+  mutate(rgnb_pre_persistence = factor(rgnb_pre_persistence, levels = c(0, 1), labels = c("Intermittent", "Persistent"))) %>%
+  mutate(rgnb_pre_cleared = factor(rgnb_pre_cleared, levels = c(0, 1), labels = c("No", "Yes")))
+
+# Apply mutations to rgnb_acq
+rgnb_acq <- rgnb_acq %>%
+  mutate(rgnb_acq_persistence = factor(rgnb_acq_persistence, levels = c(0, 1), labels = c("Intermittent", "Persistent"))) %>%
+  mutate(rgnb_acq_cleared = factor(rgnb_acq_cleared, levels = c(0, 1), labels = c("No", "Yes")))
+
+# Apply mutations to mrsa_pre
+mrsa_pre <- mrsa_pre %>%
+  mutate(mrsa_pre_persistence = factor(mrsa_pre_persistence, levels = c(0, 1), labels = c("Intermittent", "Persistent"))) %>%
+  mutate(mrsa_pre_cleared = factor(mrsa_pre_cleared, levels = c(0, 1), labels = c("No", "Yes")))
+
+# Apply mutations to mrsa_acq
+mrsa_acq <- mrsa_acq %>%
+  mutate(mrsa_acq_persistence = factor(mrsa_acq_persistence, levels = c(0, 1), labels = c("Intermittent", "Persistent"))) %>%
+  mutate(mrsa_acq_cleared = factor(mrsa_acq_cleared, levels = c(0, 1), labels = c("No", "Yes")))
+
+# Apply mutations to vre_pre
+vre_pre <- vre_pre %>%
+  mutate(vre_pre_persistence = factor(vre_pre_persistence, levels = c(0, 1), labels = c("Intermittent", "Persistent"))) %>%
+  mutate(vre_pre_cleared = factor(vre_pre_cleared, levels = c(0, 1), labels = c("No", "Yes")))
+
+# Apply mutations to vre_acq
+vre_acq <- vre_acq %>%
+  mutate(vre_acq_persistence = factor(vre_acq_persistence, levels = c(0, 1), labels = c("Intermittent", "Persistent"))) %>%
+  mutate(vre_acq_cleared = factor(vre_acq_cleared, levels = c(0, 1), labels = c("No", "Yes")))
+
+```
+
+## Make unique datasets (studyID only appeared once)
+```{r}
+# Remove duplicate study IDs, keeping the one where acqgnbr = 1
+rgnb_acq_unique <- rgnb_acq %>%
+  group_by(studyID) %>%
+  arrange(desc(acqgnbr)) %>%  # Sort in descending order, so 1 comes before 0
+  slice(1) %>%  # Keep only the first row (which will be acqgnrb = 1 if it exists)
+  ungroup()
+# Remove duplicate study IDs, keeping the one where acqmrsa = 1
+mrsa_acq_unique <- mrsa_acq %>%
+  group_by(studyID) %>%
+  arrange(desc(acqmrsa)) %>%  # Sort in descending order, so 1 comes before 0
+  slice(1) %>%  # Keep only the first row (which will be acqgnrb = 1 if it exists)
+  ungroup()
+# Remove duplicate study IDs, keeping the one where acqgnbr = 1
+vre_acq_unique <- vre_acq %>%
+  group_by(studyID) %>%
+  arrange(desc(acqvre)) %>%  # Sort in descending order, so 1 comes before 0
+  slice(1) %>%  # Keep only the first row (which will be acqgnrb = 1 if it exists)
+  ungroup()
+
+# Combine Unique Table (New Acquisition)
+combined_unique_a <- bind_rows(rgnb_acq_unique, mrsa_acq_unique, vre_acq_unique, .id = "organism")
+combined_unique_a <- combined_unique_a %>%
+  mutate(organism = case_when(
+    organism == 1 ~ "RGNB",
+    organism == 2 ~ "MRSA",
+    organism == 3 ~ "VRE"
+  ))
+
+# Subset rgnb_pre where visit == 0 to make it unique
+rgnb_pre_unique <- subset(rgnb_pre, visit == 0)
+# Subset mrsa_pre where visit == 0 to make it unique
+mrsa_pre_unique <- subset(mrsa_pre, visit == 0)
+# Subset vre_pre where visit == 0 to make it unique
+vre_pre_unique <- subset(vre_pre, visit == 0)
+
+# Combine Unique Table (Preexisting Colonization)
+combined_unique_c <- bind_rows(rgnb_pre_unique, mrsa_pre_unique, vre_pre_unique, .id = "organism")
+combined_unique_c <- combined_unique_c %>%
+  mutate(organism = case_when(
+    organism == 1 ~ "RGNB",
+    organism == 2 ~ "MRSA",
+    organism == 3 ~ "VRE"
+  ))
+```
+## Make Hands-only variable
+```{r}
+library(dplyr)
+
+# Function to create "Hands only" variable based on conditions
+create_hands_only <- function(df, siteH, siteF, siteG, siteN, siteO, siteR, siteS) {
+  df %>%
+    mutate(Hands_only = case_when(
+      get(siteH) == 1 & (is.na(get(siteF)) | get(siteF) == 0) &
+        (is.na(get(siteG)) | get(siteG) == 0) &
+        (is.na(get(siteN)) | get(siteN) == 0) &
+        (is.na(get(siteO)) | get(siteO) == 0) &
+        (is.na(get(siteR)) | get(siteR) == 0) &
+        (is.na(get(siteS)) | get(siteS) == 0) ~ 1,
+      TRUE ~ 0
+    ))
+}
+
+# Apply the function to each dataset
+rgnb_pre_unique <- create_hands_only(rgnb_pre_unique, "RGNBsiteH", "RGNBsiteF", "RGNBsiteG", "RGNBsiteN", "RGNBsiteO", "RGNBsiteR", "RGNBsiteS")
+rgnb_acq_unique <- create_hands_only(rgnb_acq_unique, "RGNBsiteH", "RGNBsiteF", "RGNBsiteG", "RGNBsiteN", "RGNBsiteO", "RGNBsiteR", "RGNBsiteS")
+
+mrsa_pre_unique <- create_hands_only(mrsa_pre_unique, "MRSAsiteH", "MRSAsiteF", "MRSAsiteG", "MRSAsiteN", "MRSAsiteO", "MRSAsiteR", "MRSAsiteS")
+mrsa_acq_unique <- create_hands_only(mrsa_acq_unique, "MRSAsiteH", "MRSAsiteF", "MRSAsiteG", "MRSAsiteN", "MRSAsiteO", "MRSAsiteR", "MRSAsiteS")
+
+vre_pre_unique <- create_hands_only(vre_pre_unique, "VREsiteH", "VREsiteF", "VREsiteG", "VREsiteN", "VREsiteO", "VREsiteR", "VREsiteS")
+vre_acq_unique <- create_hands_only(vre_acq_unique, "VREsiteH", "VREsiteF", "VREsiteG", "VREsiteN", "VREsiteO", "VREsiteR", "VREsiteS")
+```
+
+## Export datasets
+```{r}
+# Define the list of datasets and their corresponding filenames
+datasets <- list(
+  rgnb_pre = rgnb_pre,
+  rgnb_acq = rgnb_acq,
+  mrsa_pre = mrsa_pre,
+  mrsa_acq = mrsa_acq,
+  vre_pre = vre_pre,
+  vre_acq = vre_acq,
+  rgnb_pre_unique = rgnb_pre_unique,
+  rgnb_acq_unique = rgnb_acq_unique,
+  mrsa_pre_unique = mrsa_pre_unique,
+  mrsa_acq_unique = mrsa_acq_unique,
+  vre_pre_unique = vre_pre_unique,
+  vre_acq_unique = vre_acq_unique
+)
+
+filenames <- c(
+  "rgnb_pre_n_intervention.csv",
+  "rgnb_acq_n_intervention.csv",
+  "mrsa_pre_n_intervention.csv",
+  "mrsa_acq_n_intervention.csv",
+  "vre_pre_n_intervention.csv",
+  "vre_acq_n_intervention.csv",
+  "rgnb_pre_unique_n_intervention.csv",
+  "rgnb_acq_unique_n_intervention.csv",
+  "mrsa_pre_unique_n_intervention.csv",
+  "mrsa_acq_unique_n_intervention.csv",
+  "vre_pre_unique_n_intervention.csv",
+  "vre_acq_unique_n_intervention.csv"
+)
+
+# Loop through the datasets and export each to a CSV file
+for (i in seq_along(datasets)) {
+  write.csv(datasets[[i]], file = filenames[i], row.names = FALSE)
+}
+```
+
+# Table 1
+## Rename columns for persistence and clearance in all datasets
+```{r}
+# Load the dplyr package
+library(dplyr)
+
+# Rename columns in the preexisting colonization datasets
+rgnb_pre_unique <- rgnb_pre_unique %>%
+  rename(Persistence = rgnb_pre_persistence, 
+         Clearance = rgnb_pre_cleared,
+         Duration = rgnb_pre_duration)
+
+mrsa_pre_unique <- mrsa_pre_unique %>%
+  rename(Persistence = mrsa_pre_persistence, 
+         Clearance = mrsa_pre_cleared,
+         Duration = mrsa_pre_duration)
+
+vre_pre_unique <- vre_pre_unique %>%
+  rename(Persistence = vre_pre_persistence, 
+         Clearance = vre_pre_cleared,
+         Duration = vre_pre_duration)
+
+# Rename columns in the new acquisition datasets
+rgnb_acq_unique <- rgnb_acq_unique %>%
+  rename(Persistence = rgnb_acq_persistence, 
+         Clearance = rgnb_acq_cleared,
+         Duration = rgnb_acq_duration)
+
+mrsa_acq_unique <- mrsa_acq_unique %>%
+  rename(Persistence = mrsa_acq_persistence, 
+         Clearance = mrsa_acq_cleared,
+         Duration = mrsa_acq_duration)
+
+vre_acq_unique <- vre_acq_unique %>%
+  rename(Persistence = vre_acq_persistence, 
+         Clearance = vre_acq_cleared,
+         Duration = vre_acq_duration)
+```
+## Descriptive Statistics for each MDROs (both)
+```{r}
+# Summary for persistence in rgnb_pre_unique
+summary_persistence_rgnb_pre <- rgnb_pre_unique %>%
+  dplyr::select(Persistence, Clearance) %>%
+  tbl_summary(
+    type = list(Persistence ~ "categorical",
+                Clearance ~ "categorical"),
+    statistic = all_categorical() ~ "{n} ({p}%)",
+    digits = list(all_categorical() ~ c(0, 1)),
+    missing = "no"
+  ) %>%
+  modify_header(label ~ "**Variable**") %>%
+  bold_labels() %>%
+  modify_spanning_header(all_stat_cols() ~ "**RGNB**")
+
+# Summary for persistence in mrsa_pre_unique
+summary_persistence_mrsa_pre <- mrsa_pre_unique %>%
+  dplyr::select(Persistence, Clearance) %>%
+  tbl_summary(
+    type = list(Persistence ~ "categorical",
+                Clearance ~ "categorical"),
+    statistic = all_categorical() ~ "{n} ({p}%)",
+    digits = list(all_categorical() ~ c(0, 1)),
+    missing = "no"
+  ) %>%
+  modify_header(label ~ "**Variable**") %>%
+  bold_labels() %>%
+  modify_spanning_header(all_stat_cols() ~ "**MRSA**")
+
+# Summary for persistence in vre_pre_unique
+summary_persistence_vre_pre <- vre_pre_unique %>%
+  dplyr::select(Persistence, Clearance) %>%
+  tbl_summary(
+    type = list(Persistence ~ "categorical",
+                Clearance ~ "categorical"),
+    statistic = all_categorical() ~ "{n} ({p}%)",
+    digits = list(all_categorical() ~ c(0, 1)),
+    missing = "no"
+  ) %>%
+  modify_header(label ~ "**Variable**") %>%
+  bold_labels() %>%
+  modify_spanning_header(all_stat_cols() ~ "**VRE**")
+
+# Combine summaries for persistence
+combined_persistence_summary_pre <- tbl_merge(
+  tbls = list(summary_persistence_rgnb_pre, summary_persistence_mrsa_pre, summary_persistence_vre_pre),
+  tab_spanner = c("**RGNB**", "**MRSA**", "**VRE**")
+) %>%
+  as_gt() %>%
+  tab_header(
+    title = "Persistence and Clearance among NH Residents with Preexisting Colonization"
+  ) %>%
+  tab_style(
+    cell_borders(sides = c("top"), style = "hidden"),
+    locations = cells_title()
+  )
+
+# View and export the combined persistence table
+combined_persistence_summary_pre
+
+# Summary for persistence in rgnb_acq_unique
+summary_persistence_rgnb_acq <- rgnb_acq_unique %>%
+  dplyr::select(Persistence, Clearance) %>%
+  tbl_summary(
+    type = list(Persistence ~ "categorical",
+                Clearance ~ "categorical"),
+    statistic = all_categorical() ~ "{n} ({p}%)",
+    digits = list(all_categorical() ~ c(0, 1)),
+    missing = "no"
+  ) %>%
+  modify_header(label ~ "**Variable**") %>%
+  bold_labels() %>%
+  modify_spanning_header(all_stat_cols() ~ "**RGNB**")
+
+# Summary for persistence in mrsa_acq_unique
+summary_persistence_mrsa_acq <- mrsa_acq_unique %>%
+  dplyr::select(Persistence, Clearance) %>%
+  tbl_summary(
+    type = list(Persistence ~ "categorical",
+                Clearance ~ "categorical"),
+    statistic = all_categorical() ~ "{n} ({p}%)",
+    digits = list(all_categorical() ~ c(0, 1)),
+    missing = "no"
+  ) %>%
+  modify_header(label ~ "**Variable**") %>%
+  bold_labels() %>%
+  modify_spanning_header(all_stat_cols() ~ "**MRSA**")
+
+# Summary for persistence in vre_acq_unique
+summary_persistence_vre_acq <- vre_acq_unique %>%
+  dplyr::select(Persistence, Clearance) %>%
+  tbl_summary(
+    type = list(Persistence ~ "categorical",
+                Clearance ~ "categorical"),
+    statistic = all_categorical() ~ "{n} ({p}%)",
+    digits = list(all_categorical() ~ c(0, 1)),
+    missing = "no"
+  ) %>%
+  modify_header(label ~ "**Variable**") %>%
+  bold_labels() %>%
+  modify_spanning_header(all_stat_cols() ~ "**VRE**")
+
+# Combine summaries for persistence
+combined_persistence_summary_acq <- tbl_merge(
+  tbls = list(summary_persistence_rgnb_acq, summary_persistence_mrsa_acq, summary_persistence_vre_acq),
+  tab_spanner = c("**RGNB**", "**MRSA**", "**VRE**")
+) %>%
+  as_gt() %>%
+  tab_header(
+    title = "Persistence and Clearance among NH Residents with Acquired Colonization"
+  ) %>%
+  tab_style(
+    cell_borders(sides = c("top"), style = "hidden"),
+    locations = cells_title()
+  )
+
+# View and export the combined persistence table
+combined_persistence_summary_acq
+```
+## Revised version (clearance >= 5)
+```{r}
+library(dplyr)
+library(gtsummary)
+
+# Filter the datasets
+rgnb_pre_unique_filtered <- rgnb_pre_unique %>%
+  filter(rgnb_pre_totvisits_r > 5)
+
+mrsa_pre_unique_filtered <- mrsa_pre_unique %>%
+  filter(mrsa_pre_totvisits_r > 5)
+
+vre_pre_unique_filtered <- vre_pre_unique %>%
+  filter(vre_pre_totvisits_r > 5)
+
+rgnb_acq_unique_filtered <- rgnb_acq_unique %>%
+  filter(rgnb_acq_totvisits_r > 5)
+
+mrsa_acq_unique_filtered <- mrsa_acq_unique %>%
+  filter(mrsa_acq_totvisits_r > 5)
+
+vre_acq_unique_filtered <- vre_acq_unique %>%
+  filter(vre_acq_totvisits_r > 5)
+
+# Summary for persistence in rgnb_pre_unique_filtered
+summary_persistence_rgnb_pre <- rgnb_pre_unique_filtered %>%
+  dplyr::select(Persistence, Clearance) %>%
+  tbl_summary(
+    type = list(Persistence ~ "categorical",
+                Clearance ~ "categorical"),
+    statistic = all_categorical() ~ "{n} ({p}%)",
+    digits = list(all_categorical() ~ c(0, 1)),
+    missing = "no"
+  ) %>%
+  modify_header(label ~ "**Variable**") %>%
+  bold_labels() %>%
+  modify_spanning_header(all_stat_cols() ~ "**RGNB**")
+
+# Summary for persistence in mrsa_pre_unique_filtered
+summary_persistence_mrsa_pre <- mrsa_pre_unique_filtered %>%
+  dplyr::select(Persistence, Clearance) %>%
+  tbl_summary(
+    type = list(Persistence ~ "categorical",
+                Clearance ~ "categorical"),
+    statistic = all_categorical() ~ "{n} ({p}%)",
+    digits = list(all_categorical() ~ c(0, 1)),
+    missing = "no"
+  ) %>%
+  modify_header(label ~ "**Variable**") %>%
+  bold_labels() %>%
+  modify_spanning_header(all_stat_cols() ~ "**MRSA**")
+
+# Summary for persistence in vre_pre_unique_filtered
+summary_persistence_vre_pre <- vre_pre_unique_filtered %>%
+  dplyr::select(Persistence, Clearance) %>%
+  tbl_summary(
+    type = list(Persistence ~ "categorical",
+                Clearance ~ "categorical"),
+    statistic = all_categorical() ~ "{n} ({p}%)",
+    digits = list(all_categorical() ~ c(0, 1)),
+    missing = "no"
+  ) %>%
+  modify_header(label ~ "**Variable**") %>%
+  bold_labels() %>%
+  modify_spanning_header(all_stat_cols() ~ "**VRE**")
+
+# Combine summaries for persistence
+combined_persistence_summary_pre <- tbl_merge(
+  tbls = list(summary_persistence_rgnb_pre, summary_persistence_mrsa_pre, summary_persistence_vre_pre),
+  tab_spanner = c("**RGNB**", "**MRSA**", "**VRE**")
+) %>%
+  as_gt() %>%
+  tab_header(
+    title = "Persistence and Clearance among NH Residents with Preexisting Colonization"
+  ) %>%
+  tab_style(
+    cell_borders(sides = c("top"), style = "hidden"),
+    locations = cells_title()
+  )
+
+# View and export the combined persistence table
+combined_persistence_summary_pre
+
+# Summary for persistence in rgnb_acq_unique_filtered
+summary_persistence_rgnb_acq <- rgnb_acq_unique_filtered %>%
+  dplyr::select(Persistence, Clearance) %>%
+  tbl_summary(
+    type = list(Persistence ~ "categorical",
+                Clearance ~ "categorical"),
+    statistic = all_categorical() ~ "{n} ({p}%)",
+    digits = list(all_categorical() ~ c(0, 1)),
+    missing = "no"
+  ) %>%
+  modify_header(label ~ "**Variable**") %>%
+  bold_labels() %>%
+  modify_spanning_header(all_stat_cols() ~ "**RGNB**")
+
+# Summary for persistence in mrsa_acq_unique_filtered
+summary_persistence_mrsa_acq <- mrsa_acq_unique_filtered %>%
+  dplyr::select(Persistence, Clearance) %>%
+  tbl_summary(
+    type = list(Persistence ~ "categorical",
+                Clearance ~ "categorical"),
+    statistic = all_categorical() ~ "{n} ({p}%)",
+    digits = list(all_categorical() ~ c(0, 1)),
+    missing = "no"
+  ) %>%
+  modify_header(label ~ "**Variable**") %>%
+  bold_labels() %>%
+  modify_spanning_header(all_stat_cols() ~ "**MRSA**")
+
+# Summary for persistence in vre_acq_unique_filtered
+summary_persistence_vre_acq <- vre_acq_unique_filtered %>%
+  dplyr::select(Persistence, Clearance) %>%
+  tbl_summary(
+    type = list(Persistence ~ "categorical",
+                Clearance ~ "categorical"),
+    statistic = all_categorical() ~ "{n} ({p}%)",
+    digits = list(all_categorical() ~ c(0, 1)),
+    missing = "no"
+  ) %>%
+  modify_header(label ~ "**Variable**") %>%
+  bold_labels() %>%
+  modify_spanning_header(all_stat_cols() ~ "**VRE**")
+
+# Combine summaries for persistence
+combined_persistence_summary_acq <- tbl_merge(
+  tbls = list(summary_persistence_rgnb_acq, summary_persistence_mrsa_acq, summary_persistence_vre_acq),
+  tab_spanner = c("**RGNB**", "**MRSA**", "**VRE**")
+) %>%
+  as_gt() %>%
+  tab_header(
+    title = "Persistence and Clearance among NH Residents with Acquired Colonization"
+  ) %>%
+  tab_style(
+    cell_borders(sides = c("top"), style = "hidden"),
+    locations = cells_title()
+  )
+
+# View and export the combined persistence table
+combined_persistence_summary_acq
+```
+
+
+## Revised Version
+```{r}
+# Load necessary libraries
+library(dplyr)
+library(gtsummary)
+library(gt)
+library(broom)
+
+# Function to calculate proportions and 95% CI
+calc_prop_ci <- function(data, variable, level) {
+  prop <- mean(data[[variable]] == level, na.rm = TRUE) * 100  # Convert to percentage
+  ci <- prop.test(sum(data[[variable]] == level, na.rm = TRUE),
+                  n = sum(!is.na(data[[variable]])))$conf.int * 100  # Convert to percentage
+  return(c(prop, ci))
+}
+
+# Helper function to create summary data frame
+create_summary_df <- function(data, organism_label) {
+  data %>%
+    dplyr::select(Persistence, Clearance) %>%
+    summarize(
+      Organism = organism_label,
+      Persistence_Prop = calc_prop_ci(., "Persistence", "Persistent")[1],
+      Persistence_Lower_CI = calc_prop_ci(., "Persistence", "Persistent")[2],
+      Persistence_Upper_CI = calc_prop_ci(., "Persistence", "Persistent")[3],
+      Clearance_Prop = calc_prop_ci(., "Clearance", "Yes")[1],
+      Clearance_Lower_CI = calc_prop_ci(., "Clearance", "Yes")[2],
+      Clearance_Upper_CI = calc_prop_ci(., "Clearance", "Yes")[3]
+    )
+}
+
+# Create summary data frames
+summary_persistence_rgnb_pre <- create_summary_df(rgnb_pre_unique_filtered, "RGNB")
+summary_persistence_mrsa_pre <- create_summary_df(mrsa_pre_unique_filtered, "MRSA")
+summary_persistence_vre_pre <- create_summary_df(vre_pre_unique_filtered, "VRE")
+
+# Combine summaries for persistence
+combined_persistence_summary_pre <- bind_rows(
+  summary_persistence_rgnb_pre,
+  summary_persistence_mrsa_pre,
+  summary_persistence_vre_pre
+)
+
+# Convert to gtsummary table
+gt_table_pre <- combined_persistence_summary_pre %>%
+  mutate(across(c(Persistence_Prop, Persistence_Lower_CI, Persistence_Upper_CI,
+                  Clearance_Prop, Clearance_Lower_CI, Clearance_Upper_CI), 
+                ~ sprintf("%.1f%%", .))) %>%
+  gt() %>%
+  tab_header(
+    title = "Persistence and Clearance among NH Residents with Preexisting Colonization"
+  ) %>%
+  cols_label(
+    Organism = "Organism",
+    Persistence_Prop = "Persistence (Prop)",
+    Persistence_Lower_CI = "Persistence (Lower 95% CI)",
+    Persistence_Upper_CI = "Persistence (Upper 95% CI)",
+    Clearance_Prop = "Clearance (Prop)",
+    Clearance_Lower_CI = "Clearance (Lower 95% CI)",
+    Clearance_Upper_CI = "Clearance (Upper 95% CI)"
+  ) %>%
+  tab_style(
+    style = cell_borders(sides = c("top"), style = "hidden"),
+    locations = cells_title()
+  )
+
+# Print the table
+print(gt_table_pre)
+
+# Repeat for acquired colonization
+summary_persistence_rgnb_acq <- create_summary_df(rgnb_acq_unique_filtered, "RGNB")
+summary_persistence_mrsa_acq <- create_summary_df(mrsa_acq_unique_filtered, "MRSA")
+summary_persistence_vre_acq <- create_summary_df(vre_acq_unique_filtered, "VRE")
+
+combined_persistence_summary_acq <- bind_rows(
+  summary_persistence_rgnb_acq,
+  summary_persistence_mrsa_acq,
+  summary_persistence_vre_acq
+)
+
+# Convert to gtsummary table
+gt_table_acq <- combined_persistence_summary_acq %>%
+  mutate(across(c(Persistence_Prop, Persistence_Lower_CI, Persistence_Upper_CI,
+                  Clearance_Prop, Clearance_Lower_CI, Clearance_Upper_CI), 
+                ~ sprintf("%.1f%%", .))) %>%
+  gt() %>%
+  tab_header(
+    title = "Persistence and Clearance among NH Residents with Acquired Colonization"
+  ) %>%
+  cols_label(
+    Organism = "Organism",
+    Persistence_Prop = "Persistence (Prop)",
+    Persistence_Lower_CI = "Persistence (Lower 95% CI)",
+    Persistence_Upper_CI = "Persistence (Upper 95% CI)",
+    Clearance_Prop = "Clearance (Prop)",
+    Clearance_Lower_CI = "Clearance (Lower 95% CI)",
+    Clearance_Upper_CI = "Clearance (Upper 95% CI)"
+  ) %>%
+  tab_style(
+    style = cell_borders(sides = c("top"), style = "hidden"),
+    locations = cells_title()
+  )
+
+# Print the table
+print(gt_table_acq)
+```
+```{r}
+library(dplyr)
+library(gt)
+library(epitools)
+
+# Function to calculate proportions and 95% CI in percentage format
+calculate_proportion_ci <- function(successes, total) {
+  prop <- successes / total * 100
+  ci <- prop.test(successes, total)$conf.int * 100
+  return(paste0(round(prop, 1), "% (", round(ci[1], 1), "% - ", round(ci[2], 1), "%)"))
+}
+
+# Data for Preexisting Colonization
+data_preexisting <- data.frame(
+  Variable = c("Persistence", "Clearance"),
+  RGNB = c(calculate_proportion_ci(64, 88), calculate_proportion_ci(5, 88)),
+  MRSA = c(calculate_proportion_ci(33, 44), calculate_proportion_ci(2, 44)),
+  VRE = c(calculate_proportion_ci(75, 95), calculate_proportion_ci(10, 95))
+)
+
+# Data for New Acquisition
+data_new_acquisition <- data.frame(
+  Variable = c("Persistence", "Clearance"),
+  RGNB = c(calculate_proportion_ci(20, 33), calculate_proportion_ci(3, 33)),
+  MRSA = c(calculate_proportion_ci(10, 12), calculate_proportion_ci(0, 12)),
+  VRE = c(calculate_proportion_ci(10, 20), calculate_proportion_ci(1, 20))
+)
+
+# Combine data frames into one table
+combined_data <- bind_rows(
+  data_preexisting %>% mutate(Category = "Preexisting Colonization"),
+  data_new_acquisition %>% mutate(Category = "New Acquisition")
+)
+
+# Format the table using gt
+combined_table <- combined_data %>%
+  select(Category, Variable, RGNB, MRSA, VRE) %>%
+  gt() %>%
+  tab_header(
+    title = "Persistence and Clearance among NH Residents without Intervention",
+    subtitle = "Proportions and 95% Confidence Intervals"
+  ) %>%
+  cols_label(
+    Category = "Category",
+    Variable = "Variable",
+    RGNB = "RGNB",
+    MRSA = "MRSA",
+    VRE = "VRE"
+  ) %>%
+  tab_spanner(
+    label = "Preexisting Colonization",
+    columns = c(RGNB, MRSA, VRE)
+  ) %>%
+  fmt_missing(
+    columns = everything(),
+    missing_text = "0.0% (0.0% - 0.0%)"
+  )
+
+# Display the table
+print(combined_table)
+```
+
+
+## Type A plot
+```{r}
+# Load necessary libraries
+library(ggplot2)
+library(dplyr)
+
+# Data for pre-existing colonization
+data_pre <- data.frame(
+  organism = rep(c("RGNB", "MRSA", "VRE"), each = 2),
+  measure = rep(c("Persistence", "Clearance"), times = 3),
+  proportion = c(72.7, 9.4, 75.0, 12.1, 78.9, 17.3),
+  lower_ci = c(62.0, 3.9, 59.4, 4.0, 69.1, 9.9),
+  upper_ci = c(81.4, 19.9, 86.3, 29.1, 86.4, 28.2)
+)
+
+# Data for new acquisition colonization
+data_acq <- data.frame(
+  organism = rep(c("RGNB", "MRSA", "VRE"), each = 2),
+  measure = rep(c("Persistence", "Clearance"), times = 3),
+  proportion = c(60.6, 30.0, 83.3, 0.0, 50.0, 20.0),
+  lower_ci = c(42.2, 12.8, 50.9, 0.0, 29.9, 3.5),
+  upper_ci = c(76.6, 54.3, 97.1, 34.5, 70.1, 55.8)
+)
+
+# Function to plot proportions
+plot_proportions <- function(data, title) {
+  ggplot(data, aes(x = organism, y = proportion, color = measure)) +
+    geom_point(position = position_dodge(width = 0.5)) +
+    geom_errorbar(aes(ymin = lower_ci, ymax = upper_ci), width = 0.2, position = position_dodge(width = 0.5)) +
+    labs(
+      title = title,
+      x = "Organism",
+      y = "Proportion (%)"
+    ) +
+    theme_minimal() +
+    scale_color_manual(values = c("Persistence" = "blue", "Clearance" = "red"))
+}
+
+# Plot for pre-existing
+plot_pre <- plot_proportions(data_pre, "Proportions for Pre-existing Colonization")
+
+# Plot for new acquisition
+plot_acq <- plot_proportions(data_acq, "Proportions for New-Acquisition Colonization")
+
+# Print the plots
+print(plot_pre)
+print(plot_acq)
+```
+## Type B plots
+```{r}
+# Load necessary libraries
+library(ggplot2)
+library(dplyr)
+
+# Data for persistence
+data_persistence <- data.frame(
+  organism = rep(c("RGNB", "MRSA", "VRE"), times = 2),
+  measure = rep(c("Pre-existing Colonization", "New Acquisition"), each = 3),
+  proportion = c(72.7, 75.0, 78.9, 60.6, 83.3, 50.0),
+  lower_ci = c(62.0, 59.4, 69.1, 42.2, 50.9, 29.9),
+  upper_ci = c(81.4, 86.3, 86.4, 76.6, 97.1, 70.1)
+)
+
+# Data for clearance
+data_clearance <- data.frame(
+  organism = rep(c("RGNB", "MRSA", "VRE"), times = 2),
+  measure = rep(c("Pre-existing Colonization", "New Acquisition"), each = 3),
+  proportion = c(5.7, 4.5, 10.5, 9.1, 0.0, 5.0),
+  lower_ci = c(2.1, 0.8, 5.4, 2.4, 0.0, 0.3),
+  upper_ci = c(13.4, 16.7, 18.9, 25.5, 30.1, 26.9)
+)
+
+# Function to plot proportions with custom y-axis limits
+plot_proportions <- function(data, title, y_max = 100) {
+  ggplot(data, aes(x = organism, y = proportion, color = measure)) +
+    geom_point(position = position_dodge(width = 0.5)) +
+    geom_errorbar(aes(ymin = lower_ci, ymax = upper_ci), width = 0.2, position = position_dodge(width = 0.5)) +
+    labs(
+      title = title,
+      x = "Organism",
+      y = "Proportion (95% CI)"
+    ) +
+    theme_minimal() +
+    scale_color_manual(values = c("Pre-existing Colonization" = "blue", "New Acquisition" = "orange"))
+}
+
+# Plot for persistence
+plot_persistence <- plot_proportions(data_persistence, "Proportions for Persistence")
+
+# Plot for clearance
+plot_clearance <- plot_proportions(data_clearance, "Proportions for Clearance")
+
+# Print the plots
+print(plot_persistence)
+print(plot_clearance)
+
+# Save the plots to files
+ggsave("persistence_plot.png", plot = plot_persistence, width = 8, height = 6, dpi = 300)
+ggsave("clearance_plot.png", plot = plot_clearance, width = 8, height = 6, dpi = 300)
+```
+```{r}
+# Load necessary libraries
+library(ggplot2)
+library(dplyr)
+
+# Data for persistence
+data_persistence <- data.frame(
+  organism = rep(c("RGNB", "MRSA", "VRE"), times = 2),
+  measure = factor(rep(c("Pre-existing Colonization", "New Acquisition"), each = 3), levels = c("Pre-existing Colonization", "New Acquisition")),
+  proportion = c(72.7, 75.0, 78.9, 60.6, 83.3, 50.0),
+  lower_ci = c(62.0, 59.4, 69.1, 42.2, 50.9, 29.9),
+  upper_ci = c(81.4, 86.3, 86.4, 76.6, 97.1, 70.1)
+)
+
+# Data for clearance
+data_clearance <- data.frame(
+  organism = rep(c("RGNB", "MRSA", "VRE"), times = 2),
+  measure = factor(rep(c("Pre-existing Colonization", "New Acquisition"), each = 3), levels = c("Pre-existing Colonization", "New Acquisition")),
+  proportion = c(35.7, 50.0, 71.4, 50.0 , 0.0, 50.0),
+  lower_ci = c(10.6, 1.0, 47.8, 10.0, 0.0, -19.3),
+  upper_ci = c(60.8, 99.0, 95.1, 90.0, 0.0, 119.3)
+)
+
+# Function to plot proportions with custom y-axis limits
+plot_proportions <- function(data, title, y_max = 100) {
+  ggplot(data, aes(x = organism, y = proportion, fill = measure)) +
+    geom_bar(stat = "identity", position = position_dodge(width = 0.9), color = "black", width = 0.7) +
+    geom_errorbar(aes(ymin = lower_ci, ymax = upper_ci), width = 0.2, position = position_dodge(width = 0.9)) +
+    geom_text(aes(label = round(proportion, 1), y = proportion / 2), 
+              position = position_dodge(width = 0.9), 
+              vjust = 0.5, size = 3, color = "white") +
+    labs(
+      title = title,
+      x = "Organism",
+      y = "Proportion (95% CI)"
+    ) +
+    theme_minimal() +
+    scale_fill_manual(values = c("Pre-existing Colonization" = "blue", "New Acquisition" = "orange"))
+}
+
+# Plot for persistence
+plot_persistence <- plot_proportions(data_persistence, "Proportions of MDRO Persistence", y_max = 100)
+
+# Plot for clearance
+plot_clearance <- plot_proportions(data_clearance, "Proportions of MDRO Clearance", y_max = 100)
+
+# Print the plots
+print(plot_persistence)
+print(plot_clearance)
+
+# Save the plots to files
+ggsave("persistence_bar.png", plot = plot_persistence, width = 8, height = 6, dpi = 300)
+ggsave("clearance_bar.png", plot = plot_clearance, width = 8, height = 6, dpi = 300)
+```
+
+
+## Type C plots
+```{r}
+# Load necessary libraries
+library(ggplot2)
+library(dplyr)
+library(ggpubr)
+
+# Data for persistence
+data_persistence <- data.frame(
+  organism = rep(c("RGNB", "MRSA", "VRE"), times = 2),
+  measure = rep(c("Pre-existing", "New-acquisition"), each = 3),
+  proportion = c(72.7, 75.0, 78.9, 60.6, 83.3, 50.0),
+  lower_ci = c(62.0, 59.4, 69.1, 42.2, 50.9, 29.9),
+  upper_ci = c(81.4, 86.3, 86.4, 76.6, 97.1, 70.1)
+)
+
+# Data for clearance
+data_clearance <- data.frame(
+  organism = rep(c("RGNB", "MRSA", "VRE"), times = 2),
+  measure = rep(c("Pre-existing", "New-acquisition"), each = 3),
+  proportion = c(9.4, 12.1, 17.3, 30.0, 0.0, 20.0),
+  lower_ci = c(3.9, 4.0, 9.9, 12.8, 0.0, 3.5),
+  upper_ci = c(19.9, 29.1, 28.2, 54.3, 34.5, 55.8)
+)
+
+# Function to calculate p-values using chi-squared test
+calc_p_values <- function(data) {
+  p_values <- data %>%
+    group_by(organism) %>%
+    summarize(p_value = chisq.test(matrix(c(
+      proportion[measure == "Pre-existing"], 100 - proportion[measure == "Pre-existing"],
+      proportion[measure == "New-acquisition"], 100 - proportion[measure == "New-acquisition"]
+    ), nrow = 2))$p.value)
+  return(p_values)
+}
+
+# Calculate p-values for persistence and clearance
+p_values_persistence <- calc_p_values(data_persistence)
+p_values_clearance <- calc_p_values(data_clearance)
+
+# Function to plot proportions and add p-values
+plot_proportions <- function(data, title, p_values) {
+  ggplot(data, aes(x = organism, y = proportion, color = measure)) +
+    geom_point(position = position_dodge(width = 0.5)) +
+    geom_errorbar(aes(ymin = lower_ci, ymax = upper_ci), width = 0.2, position = position_dodge(width = 0.5)) +
+    labs(
+      title = title,
+      x = "Organism",
+      y = "Proportion (%)"
+    ) +
+    theme_minimal() +
+    scale_color_manual(values = c("Pre-existing" = "blue", "New-acquisition" = "red")) +
+    geom_text(data = p_values, aes(x = organism, y = 105, label = sprintf("p = %.3f", p_value)), color = "black")
+}
+
+# Plot for persistence
+plot_persistence <- plot_proportions(data_persistence, "Proportions for Persistence", p_values_persistence)
+
+# Plot for clearance
+plot_clearance <- plot_proportions(data_clearance, "Proportions for Clearance", p_values_clearance)
+
+# Print the plots
+print(plot_persistence)
+print(plot_clearance)
+
+# Save the plots to files
+ggsave("persistence_plot.png", plot = plot_persistence, width = 8, height = 6, dpi = 300)
+ggsave("clearance_plot.png", plot = plot_clearance, width = 8, height = 6, dpi = 300)
+
+```
+## Type D plots
+```{r}
+# Load necessary libraries
+library(ggplot2)
+library(dplyr)
+
+# Data for persistence
+data_persistence <- data.frame(
+  organism = rep(c("RGNB", "MRSA", "VRE"), times = 2),
+  measure = rep(c("Pre-existing Colonization", "New Acquisition"), each = 3),
+  proportion = c(72.7, 75.0, 78.9, 60.6, 83.3, 50.0),
+  lower_ci = c(62.0, 59.4, 69.1, 42.2, 50.9, 29.9),
+  upper_ci = c(81.4, 86.3, 86.4, 76.6, 97.1, 70.1)
+)
+
+# Data for clearance
+data_clearance <- data.frame(
+  organism = rep(c("RGNB", "MRSA", "VRE"), times = 2),
+  measure = rep(c("Pre-existing Colonization", "New Acquisition"), each = 3),
+  proportion = c(5.7, 4.5, 10.5, 9.1, 0.0, 5.0),
+  lower_ci = c(2.1, 0.8, 5.4, 2.4, 0.0, 0.3),
+  upper_ci = c(13.4, 16.7, 18.9, 25.5, 30.1, 26.9)
+)
+
+# Function to plot proportions with custom y-axis limits
+plot_proportions <- function(data, title, y_max = 100) {
+  ggplot(data, aes(x = organism, y = proportion, color = measure)) +
+    geom_point(position = position_dodge(width = 0.5)) +
+    geom_errorbar(aes(ymin = lower_ci, ymax = upper_ci), width = 0.2, position = position_dodge(width = 0.5)) +
+    labs(
+      title = title,
+      x = "Organism",
+      y = "Proportion (95% CI)"
+    ) +
+    theme_minimal() +
+    scale_color_manual(values = c("Pre-existing Colonization" = "blue", "New Acquisition" = "orange")) +
+    scale_y_continuous(limits = c(0, y_max))
+}
+
+# Plot for persistence
+plot_persistence <- plot_proportions(data_persistence, "Proportions for Persistence", y_max = 100)
+
+# Plot for clearance
+plot_clearance <- plot_proportions(data_clearance, "Proportions for Clearance", y_max = 100)
+
+# Print the plots
+print(plot_persistence)
+print(plot_clearance)
+
+# Save the plots to files
+ggsave("persistence_plot_100.png", plot = plot_persistence, width = 8, height = 6, dpi = 300)
+ggsave("clearance_plot_100.png", plot = plot_clearance, width = 8, height = 6, dpi = 300)
+```
+
+
+## Add chi-square p-value in persistence among organisms
+```{r}
+# Define the contingency tables
+table1 <- matrix(c(24, 11, 20, 64, 33, 75), nrow = 2, byrow = TRUE)
+table2 <- matrix(c(58, 29, 62, 6, 4, 13), nrow = 2, byrow = TRUE)
+table3 <- matrix(c(13, 2, 10, 20, 10, 10), nrow = 2, byrow = TRUE)
+table4 <- matrix(c(14, 10, 8, 6, 0, 2), nrow = 2, byrow = TRUE)
+
+# Function to decide which test to use and perform it
+perform_test <- function(table) {
+  # Calculate expected frequencies
+  expected_frequencies <- chisq.test(table)$expected
+  
+  # Decide which test to use
+  if (all(expected_frequencies >= 5)) {
+    # Use chi-square test
+    test_result <- chisq.test(table)
+  } else {
+    # Use Fisher's exact test
+    test_result <- fisher.test(table)
+  }
+  
+  return(test_result)
+}
+
+# Perform tests on all tables
+test_result1 <- perform_test(table1)
+test_result2 <- perform_test(table2)
+test_result3 <- perform_test(table3)
+test_result4 <- perform_test(table4)
+
+# Print results
+print("Preexisting Colonization - Persistence")
+print(test_result1)
+
+print("Preexisting Colonization - Clearance")
+print(test_result2)
+
+print("New Acquisition - Persistence")
+print(test_result3)
+
+print("New Acquisition - Clearance")
+print(test_result4)
+
+```
+
+# Table 2
+## Duration (Colonization) with persistence
+```{r}
+# Function to summarize duration (with persistence)
+summarize_duration <- function(data, label) {
+  data %>%
+    filter(Persistence == "Persistent") %>%
+    summarize(
+      N = n(),
+      Mean = mean(Duration, na.rm = TRUE),
+      SD = sd(Duration, na.rm = TRUE),
+      Median = median(Duration, na.rm = TRUE),
+      Min = min(Duration, na.rm = TRUE),
+      Max = max(Duration, na.rm = TRUE)
+    ) %>%
+    mutate(Variable = label) %>%
+    select(Variable, everything())
+}
+
+# Function to summarize duration (cleared)
+summarize_duration_c <- function(data, label) {
+  data %>%
+    filter(Clearance == "Yes") %>%
+    summarize(
+      N = n(),
+      Mean = mean(Duration, na.rm = TRUE),
+      SD = sd(Duration, na.rm = TRUE),
+      Median = median(Duration, na.rm = TRUE),
+      Min = min(Duration, na.rm = TRUE),
+      Max = max(Duration, na.rm = TRUE)
+    ) %>%
+    mutate(Variable = label) %>%
+    select(Variable, everything())
+}
+```
+
+```{r}
+# Ensure the Duration column is numeric
+rgnb_pre_unique$Duration <- as.numeric(rgnb_pre_unique$Duration)
+mrsa_pre_unique$Duration <- as.numeric(mrsa_pre_unique$Duration)
+vre_pre_unique$Duration <- as.numeric(vre_pre_unique$Duration)
+
+# Summarize duration for each dataset
+summary_duration_rgnb_c <- summarize_duration(rgnb_pre_unique, "RGNB")
+summary_duration_mrsa_c <- summarize_duration(mrsa_pre_unique, "MRSA")
+summary_duration_vre_c <- summarize_duration(vre_pre_unique, "VRE")
+
+# Combine the summaries into one dataframe
+combined_duration_summary_c <- bind_rows(summary_duration_rgnb_c, summary_duration_mrsa_c, summary_duration_vre_c)
+
+# Convert to gt table
+duration_gt_table_c <- combined_duration_summary_c %>%
+  gt() %>%
+  tab_header(
+    title = "Duration of Persistence in Preexisting Colonization - Persistent Patients"
+  ) %>%
+  fmt_number(
+    columns = c(Mean, SD, Median, Min, Max),
+    decimals = 2
+  ) %>%
+    tab_style(
+    style = cell_text(weight = "bold"),
+    locations = cells_body(columns = Variable)
+  ) %>%
+  tab_options(
+    column_labels.font.weight = "bold"
+  )
+  
+# View the combined duration table
+duration_gt_table_c
+```
+## Duration (Colonization) with cleared
+```{r}
+# Ensure the Duration column is numeric
+rgnb_pre_unique$Duration <- as.numeric(rgnb_pre_unique$Duration)
+mrsa_pre_unique$Duration <- as.numeric(mrsa_pre_unique$Duration)
+vre_pre_unique$Duration <- as.numeric(vre_pre_unique$Duration)
+
+rgnb_pre_unique_filtered <- rgnb_pre_unique %>%
+  filter(rgnb_pre_totvisits_r > 5)
+
+mrsa_pre_unique_filtered <- mrsa_pre_unique %>%
+  filter(mrsa_pre_totvisits_r > 5)
+
+vre_pre_unique_filtered <- vre_pre_unique %>%
+  filter(vre_pre_totvisits_r > 5)
+
+# Summarize duration for each dataset
+summary_duration_rgnb_c_c <- summarize_duration_c(rgnb_pre_unique_filtered, "RGNB")
+summary_duration_mrsa_c_c <- summarize_duration_c(mrsa_pre_unique_filtered, "MRSA")
+summary_duration_vre_c_c <- summarize_duration_c(vre_pre_unique_filtered, "VRE")
+
+# Combine the summaries into one dataframe
+combined_duration_summary_c_c <- bind_rows(summary_duration_rgnb_c_c, summary_duration_mrsa_c_c, summary_duration_vre_c_c)
+
+# Convert to gt table
+duration_gt_table_c_c <- combined_duration_summary_c_c %>%
+  gt() %>%
+  tab_header(
+    title = "Duration of Persistence in Preexisting Colonization - Cleared Patients"
+  ) %>%
+  fmt_number(
+    columns = c(Mean, SD, Median, Min, Max),
+    decimals = 2
+  ) %>%
+    tab_style(
+    style = cell_text(weight = "bold"),
+    locations = cells_body(columns = Variable)
+  ) %>%
+  tab_options(
+    column_labels.font.weight = "bold"
+  )
+
+# View the combined duration table
+duration_gt_table_c_c
+```
+## Duration (NewAcquisition) with persistence
+```{r}
+# Ensure the Duration column is numeric
+rgnb_acq_unique$Duration <- as.numeric(rgnb_acq_unique$Duration)
+mrsa_acq_unique$Duration <- as.numeric(mrsa_acq_unique$Duration)
+vre_acq_unique$Duration <- as.numeric(vre_acq_unique$Duration)
+
+rgnb_acq_unique_filtered <- rgnb_acq_unique %>%
+  filter(rgnb_acq_totvisits_r > 5)
+
+mrsa_acq_unique_filtered <- mrsa_acq_unique %>%
+  filter(mrsa_acq_totvisits_r > 5)
+
+vre_acq_unique_filtered <- vre_acq_unique %>%
+  filter(vre_acq_totvisits_r > 5)
+
+# Summarize duration for each dataset
+summary_duration_rgnb_a <- summarize_duration(rgnb_acq_unique, "RGNB")
+summary_duration_mrsa_a <- summarize_duration(mrsa_acq_unique, "MRSA")
+summary_duration_vre_a <- summarize_duration(vre_acq_unique, "VRE")
+
+# Combine the summaries into one dataframe
+combined_duration_summary_a <- bind_rows(summary_duration_rgnb_a, summary_duration_mrsa_a, summary_duration_vre_a)
+
+# Convert to gt table
+duration_gt_table_a <- combined_duration_summary_a %>%
+  gt() %>%
+  tab_header(
+    title = "Duration of Persistence in New Acquisition - Persistent Patients"
+  ) %>%
+  fmt_number(
+    columns = c(Mean, SD, Median, Min, Max),
+    decimals = 2
+  ) %>%
+    tab_style(
+    style = cell_text(weight = "bold"),
+    locations = cells_body(columns = Variable)
+  ) %>%
+  tab_options(
+    column_labels.font.weight = "bold"
+  )
+  
+# View the combined duration table
+duration_gt_table_a
+```
+## Duration (NewAcquisition) with cleared
+```{r}
+# Summarize duration for each dataset
+summary_duration_rgnb_a_c <- summarize_duration_c(rgnb_acq_unique_filtered, "RGNB")
+summary_duration_mrsa_a_c <- summarize_duration_c(mrsa_acq_unique_filtered, "MRSA")
+summary_duration_vre_a_c <- summarize_duration_c(vre_acq_unique_filtered, "VRE")
+
+# Combine the summaries into one dataframe
+combined_duration_summary_a_c <- bind_rows(summary_duration_rgnb_a_c, summary_duration_mrsa_a_c, summary_duration_vre_a_c)
+
+# Convert to gt table
+duration_gt_table_a_c <- combined_duration_summary_a_c %>%
+  gt() %>%
+  tab_header(
+    title = "Duration of Persistence in New Acquisition - Cleared Patients"
+  ) %>%
+  fmt_number(
+    columns = c(Mean, SD, Median, Min, Max),
+    decimals = 2
+  ) %>%
+    tab_style(
+    style = cell_text(weight = "bold"),
+    locations = cells_body(columns = Variable)
+  ) %>%
+  tab_options(
+    column_labels.font.weight = "bold"
+  )
+
+# View the combined duration table
+duration_gt_table_a_c
+```
+# Figure 1.Compare duration in perexisting vs. new acquisition (persistence)
+```{r}
+# Combine data frames for pre-existing and new acquisition
+combined_duration_rgnb <- bind_rows(
+  rgnb_pre_unique %>% mutate(Colonization = "Pre-existing"),
+  rgnb_acq_unique %>% mutate(Colonization = "New Acquisition"),
+  .id = "id")
+
+# Combine data frames for pre-existing and new acquisition
+combined_duration_mrsa <- bind_rows(
+  mrsa_pre_unique %>% mutate(Colonization = "Pre-existing"),
+ mrsa_acq_unique %>% mutate(Colonization = "New Acquisition"),
+  .id = "id")
+
+# Combine data frames for pre-existing and new acquisition
+combined_duration_vre <- bind_rows(
+  vre_pre_unique %>% mutate(Colonization = "Pre-existing"),
+  vre_acq_unique %>% mutate(Colonization = "New Acquisition"),
+  .id = "id")
+
+# Combine all of them
+combined_duration <- bind_rows(combined_duration_rgnb, combined_duration_mrsa, combined_duration_vre, .id = "organism")
+combined_duration <- combined_duration %>%
+  mutate(organism = case_when(
+    organism == 1 ~ "RGNB",
+    organism == 2 ~ "MRSA",
+    organism == 3 ~ "VRE"
+  ))
+
+# Check the distribution
+hist(combined_duration_rgnb$Duration, main="Histogram of Duration"
+, xlab="Duration")
+qqnorm(combined_duration_rgnb$Duration, main = "Q-Q Plot of Duration")
+qqline(combined_duration_rgnb$Duration) # Not normally distribution
+shapiro.test(combined_duration_rgnb$Duration)
+
+hist(combined_duration_mrsa$Duration, main="Histogram of Duration"
+, xlab="Duration")
+qqnorm(combined_duration_mrsa$Duration, main = "Q-Q Plot of Duration")
+qqline(combined_duration_mrsa$Duration) # Not normally distribution
+shapiro.test(combined_duration_mrsa$Duration)
+
+hist(combined_duration_vre$Duration, main="Histogram of Duration"
+, xlab="Duration")
+qqnorm(combined_duration_vre$Duration, main = "Q-Q Plot of Duration")
+qqline(combined_duration_vre$Duration) # Not normally distribution
+shapiro.test(combined_duration_vre$Duration)
+
+# Create boxplot with p values
+p1 <- ggboxplot(combined_duration, 
+                x = "Colonization", y = "Duration",
+                color = "Colonization", palette = "jco",
+                add = "jitter",
+                facet.by = "organism") +
+  stat_compare_means(method = "wilcox.test") + 
+  labs(y = "Duration of persistence")  # Add y-axis label
+p1
+
+ggsave("boxplot_1.png", plot = p1, width = 8, height = 6, dpi = 600)
+```
+
+```{r}
+library(dplyr)
+library(gtsummary)
+library(ggplot2)
+library(ggpubr)
+
+# Ensure all data frames have the same columns and types
+common_columns <- intersect(intersect(names(rgnb_pre_unique_clearance), names(mrsa_pre_unique_clearance)), names(vre_pre_unique_clearance))
+
+# Convert cogsum_bl to numeric type in all data frames
+convert_to_numeric <- function(df) {
+  df %>% 
+    select(all_of(common_columns)) %>%
+    mutate(cogsum_bl = as.numeric(cogsum_bl))
+}
+
+rgnb_pre_unique_clearance <- convert_to_numeric(rgnb_pre_unique_clearance)
+mrsa_pre_unique_clearance <- convert_to_numeric(mrsa_pre_unique_clearance)
+vre_pre_unique_clearance <- convert_to_numeric(vre_pre_unique_clearance)
+rgnb_acq_unique_clearance <- convert_to_numeric(rgnb_acq_unique_clearance)
+mrsa_acq_unique_clearance <- convert_to_numeric(mrsa_acq_unique_clearance)
+vre_acq_unique_clearance <- convert_to_numeric(vre_acq_unique_clearance)
+
+# Combine data frames for pre-existing and new acquisition for each organism
+combined_duration_rgnb_clearance <- bind_rows(
+  rgnb_pre_unique_clearance %>% mutate(Colonization = "Pre-existing"),
+  rgnb_acq_unique_clearance %>% mutate(Colonization = "New Acquisition"),
+  .id = "id")
+
+combined_duration_mrsa_clearance <- bind_rows(
+  mrsa_pre_unique_clearance %>% mutate(Colonization = "Pre-existing"),
+  mrsa_acq_unique_clearance %>% mutate(Colonization = "New Acquisition"),
+  .id = "id")
+
+combined_duration_vre_clearance <- bind_rows(
+  vre_pre_unique_clearance %>% mutate(Colonization = "Pre-existing"),
+  vre_acq_unique_clearance %>% mutate(Colonization = "New Acquisition"),
+  .id = "id")
+
+# Combine all of them into one dataset
+combined_duration_clearance <- bind_rows(combined_duration_rgnb_clearance, combined_duration_mrsa_clearance, combined_duration_vre_clearance, .id = "organism")
+combined_duration_clearance <- combined_duration_clearance %>%
+  mutate(organism = case_when(
+    organism == "1" ~ "RGNB",
+    organism == "2" ~ "MRSA",
+    organism == "3" ~ "VRE"
+  ))
+
+# Create boxplot with p values
+p2 <- ggboxplot(combined_duration_clearance, 
+                x = "Colonization", y = "Duration",
+                color = "Colonization", palette = "jco",
+                add = "jitter",
+                facet.by = "organism") +
+  stat_compare_means(method = "wilcox.test") + 
+  labs(y = "Duration of persistence")  # Add y-axis label
+
+p2
+
+# Save the boxplot
+ggsave("boxplot_2_clearance.png", plot = p2, width = 8, height = 6, dpi = 600)
+
+
+```
+
+# Figure 2. Compare duration with clearance of pre-existing colonization among species
+```{r}
+#library(dplyr)
+#library(ggpubr)
+#library(ggplot2)
+
+# Perorm pairwise comparisons
+#compare_means(Duration ~ organism,  data = combined_duration_2)
+
+# Change Colonization Order
+#combined_duration_2$Colonization = factor(combined_duration_2$Colonization,
+                                          #levels = c("Pre-existing", "New Acquisition"))
+
+# Create boxplot with p values
+#my_comparisons <- list( c("RGNB", "MRSA"), c("MRSA", "VRE"), c("RGNB", "VRE") )
+#p2 <- ggboxplot(combined_duration_2, 
+                #x = "organism", 
+                #y = "duration",
+                #color = "organism", 
+                #palette = "jco",
+                #add = "jitter",
+                #facet.by = "Colonization") +
+#  stat_compare_means(comparisons = my_comparisons)+ # Add pairwise comparisons p-value
+  #stat_compare_means(label.y = 100)     # Add global p-value + 
+  #labs(y = "Duration of persistence")  # Add y-axis label
+
+# Display the plot
+#print(p2)
+
+# Save the plot as a PNG file
+#ggsave("boxplot_3.png", plot = p2, width = 8, height = 6, dpi = 600)
+```
+```{r}
+# Convert variables as necessary
+rgnb_pre_unique$Hands_only <- as.character(rgnb_pre_unique$Hands_only)
+rgnb_pre_unique$Age <- as.numeric(rgnb_pre_unique$age_bl)
+rgnb_pre_unique$cogsum_bl <- as.numeric(rgnb_pre_unique$cogsum_bl)
+var_label(rgnb_pre_unique$cogsum_bl) <- "Cognitive Sum Score"
+
+# Univariate logistic regression for odds ratios
+rgnb_uni_or <- rgnb_pre_unique %>%
+  dplyr::select(Age,
+                Sex,
+                Race,
+                gnbr_p_cat,
+                gnbr_env_cat,
+                antibiotic_bl,
+                deviceuse, 
+                openwound_final,
+                cogsum_bl,
+                horgnb_bl,
+                psmscore_cat,
+                charlson_cat,
+                hospstay_cat,
+                Persistence,
+                Diabetes,
+                ccsdemen_bl,
+                Hands_only
+) %>%
+  tbl_uvregression(
+    method = glm,
+    y = Persistence,
+    method.args = list(family = binomial), # logistic regression
+    exponentiate = TRUE # to display OR instead of log(OR)
+  ) %>%
+  add_global_p() %>% # adds p-values for the overall test
+  modify_header(label ~ "**Characteristic**") %>% # Label the variables column
+  modify_column_header(
+    estimate ~ "**Unadjusted OR (95% CI)**",
+    p.value ~ "**P value**"
+  ) %>%
+  bold_labels() %>%
+  as_gt() %>%
+  tab_header(
+    title = "Table 2. Association between Participant Characteristics and Baseline MDRO Colonization or New MDRO Acquisitions"
+  ) %>%
+  tab_style(cell_borders(
+    sides = c("top"), style = "hidden"),
+    locations = cells_title()
+  )
+
+# Display the table
+rgnb_uni_or
+```
+
+# Table 3: Univariate Analysis for Persistence Outcome
+## RGNB Univariate_Colonization
+```{r}
+#| label: RGNB univariate analysis_colonization
+# Colonization RGNB Univariate Table (Crude)
+rgnb_pre_unique$Hands_only <- as.character(rgnb_pre_unique$Hands_only)
+
+rgnb_pre_unique$Age <- as.numeric(rgnb_pre_unique$age_bl)
+rgnb_pre_unique$cogsum_bl <- as.numeric(rgnb_pre_unique$cogsum_bl)
+var_label(rgnb_pre_unique$cogsum_bl) <- "Cognitive Sum Score"
+
+rgnb_uni_c <- rgnb_pre_unique %>%
+  dplyr::select(Age,
+                Sex,
+                Race,
+                gnbr_p_cat,
+                gnbr_env_cat,
+                antibiotic_bl,
+                deviceuse, 
+                openwound_final,
+                cogsum_bl,
+                horgnb_bl,
+                psmscore_cat,
+                charlson_cat,
+                hospstay_cat,
+                Persistence,
+                Diabetes,
+                ccsdemen_bl,
+                Hands_only
+) %>%
+  tbl_summary(by = Persistence, # stratify by persistence
+              statistic = list(all_continuous() ~ "{mean} ({sd})", #use mean and standard deviation for continuous variables
+                               all_categorical() ~ "{n} ({p}%)"), #use count and percentage for categorical variables
+              digits = list(all_categorical() ~ c(0, 2), #adds no decimal places to counts and one decimal to percentages
+                            all_continuous() ~ 1), #adds one decimal place to mean and sd values
+              missing = "no"
+              #missing_text = "Missing (n)"
+              ) %>%
+  add_p(pvalue_fun = ~style_pvalue(.x, digits = 2)) %>% #adds p value
+  add_overall() %>% #adds column with non-stratified summary statistics
+  modify_header(label ~ "**Variable**") %>% #the asterisks bold the label
+  modify_spanning_header(c("stat_1", "stat_2") ~ "**Persistence**") %>%
+  bold_labels() %>%
+  as_gt() %>% 
+  tab_header(
+    title = "Table 3. Variables associated with RGNB persistence in perexisting colonization patient"
+    ) %>% 
+  tab_style(cell_borders(
+    sides = c("top"), style = "hidden"),
+    locations = cells_title())
+
+# View the table
+rgnb_uni_c
+```
+# RGNB OR
+```{r}
+# Filter out variables with only one unique level
+categorical_vars_rgnb <- c("Sex", "gnbr_p_cat", "gnbr_env_cat", "antibiotic_bl", 
+                      "deviceuse", "openwound_final", "horgnb_bl", "psmscore_cat", 
+                      "charlson_cat", "hospstay_cat", "Persistence", "Diabetes", 
+                      "ccsdemen_bl", "Hands_only")
+
+# Filter for categorical variables with at least two levels
+valid_categorical_vars_rgnb <- categorical_vars_rgnb[sapply(rgnb_pre_unique[categorical_vars_rgnb], function(x) length(unique(x)) > 1)]
+
+# Select only valid variables for analysis
+rgnb_uni_or <- rgnb_pre_unique %>%
+  dplyr::select(Age, cogsum_bl, all_of(valid_categorical_vars)) %>%
+  tbl_uvregression(
+    method = glm,
+    y = Persistence,
+    method.args = list(family = binomial), # logistic regression
+    exponentiate = TRUE # to display OR instead of log(OR)
+  ) %>%
+  add_global_p() %>% # adds p-values for the overall test
+  modify_header(
+    label ~ "**Characteristic**",
+    estimate ~ "**Unadjusted OR (95% CI)**",
+    p.value ~ "**P value**"
+  ) %>%
+  bold_labels() %>%
+  as_gt() %>%
+  tab_header(
+    title = "Table 1. Association between Participant Characteristics and Baseline MDRO Colonization or New MDRO Acquisitions"
+  ) %>%
+  tab_style(cell_borders(
+    sides = c("top"), style = "hidden"),
+    locations = cells_title()
+  )
+
+# Display the table
+rgnb_uni_or
+
+```
+# MRSA OR
+```{r}
+# Filter out variables with only one unique level
+categorical_vars_mrsa <- c("Sex", "mrsa_p_cat", "mrsa_env_cat", "antibiotic_bl", 
+                      "deviceuse", "openwound_final", "homrsa_bl", "psmscore_cat", 
+                      "charlson_cat", "hospstay_cat", "Persistence", "Diabetes", 
+                      "ccschf_bl", "Hands_only")
+
+mrsa_pre_unique$age_bl <- as.numeric(mrsa_pre_unique$age_bl)
+mrsa_pre_unique$cogsum_bl <- as.numeric(mrsa_pre_unique$cogsum_bl)
+
+# Filter for categorical variables with at least two levels
+valid_categorical_vars_mrsa <- categorical_vars_mrsa[sapply(mrsa_pre_unique[categorical_vars_mrsa], function(x) length(unique(x)) > 1)]
+
+# Select only valid variables for analysis
+mrsa_uni_or <- mrsa_pre_unique %>%
+  dplyr::select(age_bl, cogsum_bl, all_of(valid_categorical_vars_mrsa)) %>%
+  tbl_uvregression(
+    method = glm,
+    y = Persistence,
+    method.args = list(family = binomial), # logistic regression
+    exponentiate = TRUE # to display OR instead of log(OR)
+  ) %>%
+  add_global_p() %>% # adds p-values for the overall test
+  modify_header(
+    label ~ "**Characteristic**",
+    estimate ~ "**Unadjusted OR (95% CI)**",
+    p.value ~ "**P value**"
+  ) %>%
+  bold_labels() %>%
+  as_gt() %>%
+  tab_header(
+    title = "Table 1. Association between Participant Characteristics and Baseline MDRO Colonization or New MDRO Acquisitions"
+  ) %>%
+  tab_style(cell_borders(
+    sides = c("top"), style = "hidden"),
+    locations = cells_title()
+  )
+
+# Display the table
+mrsa_uni_or
+
+```
+# VRE OR
+```{r}
+# Filter out variables with only one unique level
+categorical_vars_vre <- c("Sex", "vre_p_cat", "vre_env_cat", "antibiotic_bl", 
+                      "deviceuse", "openwound_final", "hovre_bl", "psmscore_cat", 
+                      "charlson_cat", "hospstay_cat", "Persistence", "Diabetes", 
+                      "ccscopd_bl", "Hands_only")
+vre_pre_unique$age_bl <- as.numeric(vre_pre_unique$age_bl)
+vre_pre_unique$cogsum_bl <- as.numeric(vre_pre_unique$cogsum_bl)
+
+# Filter for categorical variables with at least two levels
+valid_categorical_vars_vre <- categorical_vars_vre[sapply(vre_pre_unique[categorical_vars_vre], function(x) length(unique(x)) > 1)]
+
+# Select only valid variables for analysis
+vre_uni_or <- vre_pre_unique %>%
+  dplyr::select(age_bl, cogsum_bl, all_of(valid_categorical_vars_vre)) %>%
+  tbl_uvregression(
+    method = glm,
+    y = Persistence,
+    method.args = list(family = binomial), # logistic regression
+    exponentiate = TRUE # to display OR instead of log(OR)
+  ) %>%
+  add_global_p() %>% # adds p-values for the overall test
+  modify_header(
+    label ~ "**Characteristic**",
+    estimate ~ "**Unadjusted OR (95% CI)**",
+    p.value ~ "**P value**"
+  ) %>%
+  bold_labels() %>%
+  as_gt() %>%
+  tab_header(
+    title = "Table 1. Association between Participant Characteristics and Baseline MDRO Colonization or New MDRO Acquisitions_VRE"
+  ) %>%
+  tab_style(cell_borders(
+    sides = c("top"), style = "hidden"),
+    locations = cells_title()
+  )
+
+# Display the table
+vre_uni_or
+
+```
+
+## MRSA Univariate_Colonization
+```{r}
+#| label: MRSA univariate analysis_colonization
+# Colonization MRSA Univariate Table (Crude)
+mrsa_pre_unique$Hands_only <- as.character(mrsa_pre_unique$Hands_only)
+
+mrsa_pre_unique$Age <- as.numeric(mrsa_pre_unique$age_bl)
+mrsa_pre_unique$cogsum_bl <- as.numeric(mrsa_pre_unique$cogsum_bl)
+var_label(mrsa_pre_unique$cogsum_bl) <- "Cognitive Sum Score"
+
+mrsa_uni_c <- mrsa_pre_unique %>%
+  dplyr::select(Age,
+                Sex,
+                Race,
+                mrsa_p_cat,
+                mrsa_env_cat,
+                antibiotic_bl,
+                deviceuse, 
+                openwound_final,
+                cogsum_bl,
+                homrsa_bl,
+                psmscore_cat,
+                charlson_cat,
+                hospstay_cat,
+                Persistence,
+                Diabetes,
+                ccschf_bl,
+                Hands_only
+) %>%
+  tbl_summary(by = Persistence, # stratify by persistence
+              statistic = list(all_continuous() ~ "{mean} ({sd})", #use mean and standard deviation for continuous variables
+                               all_categorical() ~ "{n} ({p}%)"), #use count and percentage for categorical variables
+              digits = list(all_categorical() ~ c(0, 2), #adds no decimal places to counts and one decimal to percentages
+                            all_continuous() ~ 1), #adds one decimal place to mean and sd values
+              missing = "no"
+              #missing_text = "Missing (n)"
+              ) %>%
+  add_p(pvalue_fun = ~style_pvalue(.x, digits = 2)) %>% #adds p value
+  add_overall() %>% #adds column with non-stratified summary statistics
+  modify_header(label ~ "**Variable**") %>% #the asterisks bold the label
+  modify_spanning_header(c("stat_1", "stat_2") ~ "**Persistence**") %>%
+  bold_labels() %>%
+  as_gt() %>% 
+  tab_header(
+    title = "Table 3. Variables associated with MRSA persistence in perexisting colonization patient"
+    ) %>% 
+  tab_style(cell_borders(
+    sides = c("top"), style = "hidden"),
+    locations = cells_title())
+
+# View the table
+mrsa_uni_c
+```
+## VRE Univariate_Colonization
+```{r}
+#| label: VRE univariate analysis_colonization
+# Colonization VRE Univariate Table (Crude)
+vre_pre_unique$Hands_only <- as.character(vre_pre_unique$Hands_only)
+
+vre_pre_unique$Age <- as.numeric(vre_pre_unique$age_bl)
+vre_pre_unique$cogsum_bl <- as.numeric(vre_pre_unique$cogsum_bl)
+var_label(vre_pre_unique$cogsum_bl) <- "Cognitive Sum Score"
+
+vre_uni_c <- vre_pre_unique %>%
+  dplyr::select(Age,
+                Sex,
+                Race,
+                vre_p_cat,
+                vre_env_cat,
+                antibiotic_bl,
+                deviceuse, 
+                openwound_final,
+                cogsum_bl,
+                hovre_bl,
+                psmscore_cat,
+                charlson_cat,
+                hospstay_cat,
+                Persistence,
+                Diabetes,
+                ccscopd_bl,
+                Hands_only
+) %>%
+  tbl_summary(by = Persistence, # stratify by persistence
+              statistic = list(all_continuous() ~ "{mean} ({sd})", #use mean and standard deviation for continuous variables
+                               all_categorical() ~ "{n} ({p}%)"), #use count and percentage for categorical variables
+              digits = list(all_categorical() ~ c(0, 2), #adds no decimal places to counts and one decimal to percentages
+                            all_continuous() ~ 1), #adds one decimal place to mean and sd values
+              missing = "no"
+              #missing_text = "Missing (n)"
+              ) %>%
+  add_p(pvalue_fun = ~style_pvalue(.x, digits = 2)) %>% #adds p value
+  add_overall() %>% #adds column with non-stratified summary statistics
+  modify_header(label ~ "**Variable**") %>% #the asterisks bold the label
+  modify_spanning_header(c("stat_1", "stat_2") ~ "**Persistence**") %>%
+  bold_labels() %>%
+  as_gt() %>% 
+  tab_header(
+    title = "Table 3. Variables associated with VRE persistence in perexisting colonization patient"
+    ) %>% 
+  tab_style(cell_borders(
+    sides = c("top"), style = "hidden"),
+    locations = cells_title())
+
+# View the table
+vre_uni_c
+```
+# RGNB OR NEW
+```{r}
+# Filter out variables with only one unique level
+categorical_vars_rgnb <- c("Sex", "gnbr_p_cat", "gnbr_env_cat", "antibiotic_bl", 
+                      "deviceuse", "openwound_final", "horgnb_bl", "psmscore_cat", 
+                      "charlson_cat", "hospstay_cat", "Persistence", "Diabetes", 
+                      "ccsdemen_bl", "Hands_only")
+rgnb_acq_unique$age_bl <- as.numeric(rgnb_acq_unique$age_bl)
+rgnb_acq_unique$cogsum_bl <- as.numeric(rgnb_acq_unique$cogsum_bl)
+
+# Filter for categorical variables with at least two levels
+valid_categorical_vars_rgnb <- categorical_vars_rgnb[sapply(rgnb_acq_unique[categorical_vars_rgnb], function(x) length(unique(x)) > 1)]
+
+# Select only valid variables for analysis
+rgnb_uni_or <- rgnb_acq_unique %>%
+  dplyr::select(age_bl, cogsum_bl, all_of(valid_categorical_vars)) %>%
+  tbl_uvregression(
+    method = glm,
+    y = Persistence,
+    method.args = list(family = binomial), # logistic regression
+    exponentiate = TRUE # to display OR instead of log(OR)
+  ) %>%
+  add_global_p() %>% # adds p-values for the overall test
+  modify_header(
+    label ~ "**Characteristic**",
+    estimate ~ "**Unadjusted OR (95% CI)**",
+    p.value ~ "**P value**"
+  ) %>%
+  bold_labels() %>%
+  as_gt() %>%
+  tab_header(
+    title = "Table 1. Association between Participant Characteristics and Baseline MDRO Colonization or New MDRO Acquisitions"
+  ) %>%
+  tab_style(cell_borders(
+    sides = c("top"), style = "hidden"),
+    locations = cells_title()
+  )
+
+# Display the table
+rgnb_uni_or
+```
+
+## RGNB Univariate_Acquisition
+```{r}
+#| label: RGNB univariate analysis_acquisition
+# Colonization RGNB Univariate Table (Crude)
+rgnb_acq_unique$Hands_only <- as.character(rgnb_acq_unique$Hands_only)
+
+rgnb_acq_unique$Age <- as.numeric(rgnb_acq_unique$age_bl)
+rgnb_acq_unique$cogsum_bl <- as.numeric(rgnb_acq_unique$cogsum_bl)
+var_label(rgnb_acq_unique$cogsum_bl) <- "Cognitive Sum Score"
+
+rgnb_uni_a <- rgnb_acq_unique %>%
+  dplyr::select(Age,
+                Sex,
+                Race,
+                gnbr_p_cat,
+                gnbr_env_cat,
+                antibiotic_bl,
+                deviceuse, 
+                openwound_final,
+                cogsum_bl,
+                horgnb_bl,
+                psmscore_cat,
+                charlson_cat,
+                hospstay_cat,
+                Persistence,
+                Diabetes,
+                ccshemi_bl,
+                Hands_only
+) %>%
+  tbl_summary(by = Persistence, # stratify by persistence
+              statistic = list(all_continuous() ~ "{mean} ({sd})", #use mean and standard deviation for continuous variables
+                               all_categorical() ~ "{n} ({p}%)"), #use count and percentage for categorical variables
+              digits = list(all_categorical() ~ c(0, 2), #adds no decimal places to counts and one decimal to percentages
+                            all_continuous() ~ 1), #adds one decimal place to mean and sd values
+              missing = "no"
+              #missing_text = "Missing (n)"
+              ) %>%
+  add_p(pvalue_fun = ~style_pvalue(.x, digits = 2)) %>% #adds p value
+  add_overall() %>% #adds column with non-stratified summary statistics
+  modify_header(label ~ "**Variable**") %>% #the asterisks bold the label
+  modify_spanning_header(c("stat_1", "stat_2") ~ "**Persistence**") %>%
+  bold_labels() %>%
+  as_gt() %>% 
+  tab_header(
+    title = "Table 4. Variables associated with RGNB persistence in New Acquisition patient"
+    ) %>% 
+  tab_style(cell_borders(
+    sides = c("top"), style = "hidden"),
+    locations = cells_title())
+
+# View the table
+rgnb_uni_a
+```
+## MRSA Univariate_Acquisition
+```{r}
+#| label: MRSA univariate analysis_acquisition
+# Colonization MRSA Univariate Table (Crude)
+mrsa_acq_unique$Hands_only <- as.character(mrsa_acq_unique$Hands_only)
+
+mrsa_acq_unique$Age <- as.numeric(mrsa_acq_unique$age_bl)
+mrsa_acq_unique$cogsum <- as.numeric(mrsa_acq_unique$cogsum_bl)
+var_label(mrsa_acq_unique$cogsum) <- "Cognitive Sum Score"
+
+mrsa_uni_a <- mrsa_acq_unique %>%
+  dplyr::select(Age,
+                Sex,
+                Race,
+                mrsa_p_cat,
+                mrsa_env_cat,
+                antibiotic_bl,
+                deviceuse, 
+                openwound_final,
+                cogsum,
+                homrsa_bl,
+                psmscore_cat,
+                charlson_cat,
+                hospstay_cat,
+                Persistence,
+                Diabetes,
+                ccschf_bl,
+                Hands_only
+) %>%
+  tbl_summary(by = Persistence, # stratify by persistence
+              type = list(cogsum ~ "continuous"), # explicitly set cogsum as continuous
+              statistic = list(all_continuous() ~ "{mean} ({sd})", #use mean and standard deviation for continuous variables
+                               all_categorical() ~ "{n} ({p}%)"), #use count and percentage for categorical variables
+              digits = list(all_categorical() ~ c(0, 2), #adds no decimal places to counts and one decimal to percentages
+                            all_continuous() ~ 1), #adds one decimal place to mean and sd values
+              missing = "no"
+              #missing_text = "Missing (n)"
+              ) %>%
+  add_p(pvalue_fun = ~style_pvalue(.x, digits = 2)) %>% #adds p value
+  add_overall() %>% #adds column with non-stratified summary statistics
+  modify_header(label ~ "**Variable**") %>% #the asterisks bold the label
+  modify_spanning_header(c("stat_1", "stat_2") ~ "**Persistence**") %>%
+  bold_labels() %>%
+  as_gt() %>% 
+  tab_header(
+    title = "Table 4. Variables associated with MRSA persistence in New Acquisition patient"
+    ) %>% 
+  tab_style(cell_borders(
+    sides = c("top"), style = "hidden"),
+    locations = cells_title())
+
+# View the table
+mrsa_uni_a
+```
+## VRE Univariate_Acquisition
+```{r}
+#| label: VRE univariate analysis_acquisition
+vre_acq_unique$Hands_only <- as.character(vre_acq_unique$Hands_only)
+
+vre_acq_unique$Age <- as.numeric(vre_acq_unique$age_bl)
+vre_acq_unique$cogsum <- as.numeric(vre_acq_unique$cogsum_bl)
+var_label(vre_acq_unique$cogsum) <- "Cognitive Sum Score"
+
+vre_uni_a <- vre_acq_unique %>%
+  dplyr::select(Age,
+                Sex,
+                Race,
+                vre_p_cat,
+                vre_env_cat,
+                antibiotic_bl,
+                deviceuse, 
+                openwound_final,
+                cogsum,
+                hovre_bl,
+                psmscore_cat,
+                charlson_cat,
+                hospstay_cat,
+                Persistence,
+                Diabetes,
+                ccschf_bl,
+                Hands_only
+) %>%
+  tbl_summary(by = Persistence, # stratify by persistence
+              type = list(cogsum ~ "continuous"), # explicitly set cogsum as continuous
+              statistic = list(all_continuous() ~ "{mean} ({sd})", #use mean and standard deviation for continuous variables
+                               all_categorical() ~ "{n} ({p}%)"), #use count and percentage for categorical variables
+              digits = list(all_categorical() ~ c(0, 2), #adds no decimal places to counts and one decimal to percentages
+                            all_continuous() ~ 1), #adds one decimal place to mean and sd values
+              missing = "no"
+              #missing_text = "Missing (n)"
+              ) %>%
+  add_p(pvalue_fun = ~style_pvalue(.x, digits = 2)) %>% #adds p value
+  add_overall() %>% #adds column with non-stratified summary statistics
+  modify_header(label ~ "**Variable**") %>% #the asterisks bold the label
+  modify_spanning_header(c("stat_1", "stat_2") ~ "**Persistence**") %>%
+  bold_labels() %>%
+  as_gt() %>% 
+  tab_header(
+    title = "Table 4. Variables associated with VRE persistence in New Acquisition patient"
+    ) %>% 
+  tab_style(cell_borders(
+    sides = c("top"), style = "hidden"),
+    locations = cells_title())
+
+# View the table
+vre_uni_a
+```
+
+# Table 5: Multivariate for Persistence
+## Stepwise - Colonization
+```{r}
+#| label: RGNB_Colonization
+# Multivariate logistic models
+# Load necessary libraries
+library(MASS)
+library(dplyr)
+
+# Define the variables to check for missing values
+variables_to_check <- c("age_bl", "BMI", "gender", "race", "cogsum_bl", "deviceuse", "charlson_cat", 
+                        "horgnb_bl", "antibiotic_bl", "openwound_final", "hospstay")
+
+# Subset the data to remove rows with missing values in the specified variables
+rgnb_unique_c_complete <- rgnb_pre_unique[complete.cases(rgnb_unique_c[, variables_to_check]), ]
+
+# Define the initial full model with all potential risk factors for RGNB
+rgnb_full_model_c <- glm(persistence ~ age_bl + BMI + gender + race + cogsum_bl + deviceuse + charlson_cat + horgnb_bl + antibiotic_bl + openwound_final + hospstay + psmscore,
+                        data = rgnb_unique_c_complete, 
+                        family = binomial)
+
+# Perform stepwise regression for MRSA
+rgnb_stepwise_model_c <- stepAIC(rgnb_full_model_c, direction = "both", trace = FALSE)
+
+# Summary of the final MRSA model
+summary(rgnb_stepwise_model_c)
+
+# Extract and print final coefficients for MRSA
+rgnb_final_coefficients <- summary(rgnb_stepwise_model_c)$coefficients
+print(rgnb_final_coefficients)
+```
+## Multivariate - New Acquisition
+```{r}
+#| label: multivariate analysis_New acquisition
+# Multivariate logistic models
+model_rgnb_a <- glm(persistence ~ age_bl + gender + deviceuse + urincath + ccshemi_bl + ccsmsrd_bl, 
+                   data = rgnb_unique_a, 
+                   family = binomial(link = "logit"))
+summary(model_rgnb_a)
+
+model_mrsa_a <- glm(persistence ~ age_bl + gender + hospstay, 
+                   data = mrsa_unique_a, 
+                   family = binomial(link = "logit"))
+summary(model_mrsa_a)
+
+model_vre_a <- glm(persistence ~ age_bl + BMI + gender + vre_p + ccschf_bl, 
+                   data = vre_unique_a, 
+                   family = binomial(link = "logit"))
+summary(model_vre_a)
+```
+
+# Figure 3.Survival analysis
+## New Acquisition
+```{r}
+# Combine persistence, duration, and clearance into a unified format
+combined_long <- combined_unique_a %>%
+  mutate(
+    Persistence = case_when(
+      organism == "RGNB" ~ rgnb_acq_persistence,
+      organism == "MRSA" ~ mrsa_acq_persistence,
+      organism == "VRE" ~ vre_acq_persistence
+    ),
+    Duration = case_when(
+      organism == "RGNB" ~ rgnb_acq_duration,
+      organism == "MRSA" ~ mrsa_acq_duration,
+      organism == "VRE" ~ vre_acq_duration
+    ),
+    Clearance = case_when(
+      organism == "RGNB" ~ rgnb_acq_cleared,
+      organism == "MRSA" ~ mrsa_acq_cleared,
+      organism == "VRE" ~ vre_acq_cleared
+    )
+  )
+
+combined_long <- combined_long %>%
+  filter(mrsa_acq_totvisits_r > 5 |
+         rgnb_acq_totvisits_r > 5 |
+         vre_acq_totvisits_r > 5)
+
+# Filter for persistence data
+persistence_a <- combined_long %>%
+  filter(Persistence == "Persistent")
+
+persistence_a$Duration <- as.numeric(persistence_a$Duration)
+
+# Create a survival object
+surv_a <- Surv(time = persistence_a$Duration, 
+               event = persistence_a$Clearance == "Yes")
+
+# Fit the Kaplan-Meier model
+km_curve_a <- survfit(surv_a ~ organism, data = persistence_a)
+summary(km_curve_a)
+survdiff(surv_a ~ organism, data = persistence_a)
+
+# Plot the Kaplan-Meier curve
+gg_surv_a <- ggsurvplot(km_curve_a, 
+           data = persistence_a,
+           pval = TRUE,
+           pval.method = TRUE,
+           pval.coord = c(0, 0.1), # position the p-value on the plot
+           pval.method.coord = c(0, 0.15), # position the method p-value on the plot
+           ggtheme = theme_minimal(),
+           # risk.table = TRUE,       # To show the risk table
+           # risk.table.col = "strata",# Change risk table color by groups
+           legend.labs = c("MRSA", "RGNB", "VRE"), # Change group labels
+           legend.title = "Organism",
+           xlab = "Clearance of colonization (days)",
+           ylab = "Probability of MDROs Persistence",
+           title = "Kaplan-Meier Survival Curve for New Acquisition Residents"
+)
+
+# Print the plot
+print(gg_surv_a)
+
+# Save the plot by extracting the ggplot component
+ggsave(file = "survival_1.png", plot = gg_surv_a$plot, width = 8, height = 6, dpi = 600)
+
+
+# Calculate median survival times
+median_surv_a <- surv_median(km_curve_a)
+median_surv_a
+
+# Add median survival times to the plot
+# medians <- median_surv$median
+#for(i in 1:nrow(median_surv)) {
+#  gg_surv$plot <- gg_surv$plot +
+#    annotate("text", x = medians[i], y = 0.5, label = #paste("Median:", round(medians[i], 2)),
+#             color = "black", vjust = -1) # Adjust color and vjust as needed
+#}
+
+# Extract survival probabilities at specific times (e.g., 50 and 100 days)
+# surv_probs <- summary(km_curve_a, times = c(50, 100))
+# print(surv_probs)
+
+# Add survival probabilities to the plot
+# for (i in 1:length(km_curve_a$strata)) {
+#  organism_name <- names(km_curve_a$strata)[i]
+#  prob_50 <- surv_probs$surv[which(surv_probs$strata == organism_name & surv_probs$time == 50)]
+#  prob_100 <- surv_probs$surv[which(surv_probs$strata == organism_name & surv_probs$time == 100)]
+
+#  gg_surv$plot <- gg_surv$plot +
+ #   annotate("text", x = 50, y = prob_50, label = paste(organism_name, "50 days:", round(prob_50, 2)),
+  #           color = "black", vjust = -1, hjust = 0) +
+   # annotate("text", x = 100, y = prob_100, label = paste(organism_name, "100 days:", round(prob_100, 2)),
+    #         color = "black", vjust = -1, hjust = 0)
+
+# Load cowplot library
+library(cowplot)
+
+# Assemble the components manually
+combined_plot <- cowplot::plot_grid(
+     gg_surv_a$plot,
+     gg_surv_a$table,
+     ncol = 1,
+     rel_heights = c(3, 1)  # Adjust the heights as needed
+ )
+ 
+ # Save the combined plot
+ggsave(filename = "survival_1.png", plot = combined_plot, width = 8, height = 6, dpi = 600)
+#}
+```
+### Split Acquisition
+```{r}
+# Create subsets for each organism
+persistence_rgnb_a <- subset(persistence_a, organism == "RGNB")
+persistence_mrsa_a <- subset(persistence_a, organism == "MRSA")
+persistence_vre_a <- subset(persistence_a, organism == "VRE")
+
+# Kaplan-Meier analysis for RGNB
+surv_rgnb_a <- Surv(time = persistence_rgnb_a$duration, event = persistence_rgnb_a$cleared == "Yes")
+km_curve_rgnb_a <- survfit(surv_rgnb_a ~ 1)
+summary(km_curve_rgnb_a)
+ggsurvplot(km_curve_rgnb_a, 
+           data = persistence_rgnb_a,
+           ggtheme = theme_minimal(),
+           xlab = "Clearance of colonization (days)",
+           ylab = "Probability of MDROs Persistence",
+           title = "Kaplan-Meier Survival Curve for RGNB Residents",
+           legend = "none"
+)
+
+# Kaplan-Meier analysis for MRSA
+surv_mrsa_a <- Surv(time = persistence_mrsa_a$duration, event = persistence_mrsa_a$cleared == "Yes")
+km_curve_mrsa_a <- survfit(surv_mrsa_a ~ 1)
+summary(km_curve_mrsa_a)
+ggsurvplot(km_curve_mrsa_a, 
+           data = persistence_mrsa_a,
+           ggtheme = theme_minimal(),
+           xlab = "Clearance of colonization (days)",
+           ylab = "Probability of MDROs Persistence",
+           title = "Kaplan-Meier Survival Curve for MRSA Residents",
+           legend = "none"
+)
+
+# Kaplan-Meier analysis for VRE
+surv_vre_a <- Surv(time = persistence_vre_a$duration, event = persistence_vre_a$cleared == "Yes")
+km_curve_vre_a <- survfit(surv_vre_a ~ 1)
+summary(km_curve_vre_a)
+ggsurvplot(km_curve_vre_a, 
+           data = persistence_vre_a,
+           ggtheme = theme_minimal(),
+           xlab = "Clearance of colonization (days)",
+           ylab = "Probability of MDROs Persistence",
+           title = "Kaplan-Meier Survival Curve for VRE Residents",
+           legend = "none"
+)
+
+# Cox proportional hazards model for RGNB
+cox_rgnb_a <- coxph(surv_rgnb_a ~ age_bl + gender, data = persistence_rgnb_a)
+summary(cox_rgnb_a)
+exp(cbind(coef(cox_rgnb_a), confint(cox_rgnb_a)))
+cox.zph(cox_rgnb_a)
+plot(cox.zph(cox_rgnb_a))
+
+# Cox proportional hazards model for VRE
+cox_vre_a <- coxph(surv_vre_a ~ age_bl + gender, data = persistence_vre_a)
+summary(cox_vre_a)
+exp(cbind(coef(cox_vre_a), confint(cox_vre_a)))
+cox.zph(cox_vre_a)
+plot(cox.zph(cox_vre_a))
+```
+
+## Colonization
+```{r}
+# Load necessary libraries
+library(survival)
+library(ranger)
+library(ggplot2)
+library(dplyr)
+library(ggfortify)
+library(survminer)
+
+# Combine persistence, duration, and clearance into a unified format
+combined_long_c <- combined_unique_c %>%
+  mutate(
+    Persistence = case_when(
+      organism == "RGNB" ~ rgnb_pre_persistence,
+      organism == "MRSA" ~ mrsa_pre_persistence,
+      organism == "VRE" ~ vre_pre_persistence
+    ),
+    Duration = case_when(
+      organism == "RGNB" ~ rgnb_pre_duration,
+      organism == "MRSA" ~ mrsa_pre_duration,
+      organism == "VRE" ~ vre_pre_duration
+    ),
+    Clearance = case_when(
+      organism == "RGNB" ~ rgnb_pre_cleared,
+      organism == "MRSA" ~ mrsa_pre_cleared,
+      organism == "VRE" ~ vre_pre_cleared
+    )
+  )
+
+# Filter for persistence data
+combined_long_c <- combined_long_c %>%
+  filter(mrsa_pre_totvisits_r > 5 |
+         rgnb_pre_totvisits_r > 5 |
+         vre_pre_totvisits_r > 5)
+
+persistence_c <- combined_long_c %>%
+  filter(Persistence == "Persistent")
+
+persistence_c$Duration <- as.numeric(persistence_c$Duration)
+
+# Create a survival object
+surv_c <- Surv(time = persistence_c$Duration, 
+             event = persistence_c$Clearance == "Yes")
+
+# Fit the Kaplan-Meier model
+km_curve_c <- survfit(surv_c ~ organism, data = persistence_c)
+summary(km_curve_c)
+survdiff(surv_c ~ organism, data = persistence_c)
+
+# Plot the Kaplan-Meier curve
+gg_surv_c <- ggsurvplot(km_curve_c, 
+           data = persistence_c,
+           pval = TRUE,
+           pval.method = TRUE,
+           pval.coord = c(0, 0.1), # position the p-value on the plot
+           pval.method.coord = c(0, 0.15), # position the method p-value on the plot
+           ggtheme = theme_minimal(),
+           # conf.int = TRUE,
+           # risk.table = TRUE,       # To show the risk table
+           # risk.table.col = "strata",# Change risk table color by groups
+           legend.labs = c("MRSA", "RGNB", "VRE"), # Change group labels
+           legend.title = "Organism",
+           xlab = "Clerance of colonization (days)",
+           ylab = "Probability of MDROs Persistnece",
+           title = "Kaplan-Meier Survival Curve for Preexisting Colonization Residents"
+)
+
+# Calculate median survival times
+median_surv_c <- surv_median(km_curve_c)
+median_surv_c
+
+# Add median survival times to the plot
+# medians <- median_surv$median
+#for(i in 1:nrow(median_surv)) {
+#  gg_surv$plot <- gg_surv$plot +
+#    annotate("text", x = medians[i], y = 0.5, label = #paste("Median:", round(medians[i], 2)),
+#             color = "black", vjust = -1) # Adjust color and vjust as needed
+#}
+
+# Extract survival probabilities at specific times (e.g., 50 and 100 days)
+# surv_probs <- summary(km_curve_a, times = c(50, 100))
+# print(surv_probs)
+
+# Add survival probabilities to the plot
+# for (i in 1:length(km_curve_a$strata)) {
+#  organism_name <- names(km_curve_a$strata)[i]
+#  prob_50 <- surv_probs$surv[which(surv_probs$strata == organism_name & surv_probs$time == 50)]
+#  prob_100 <- surv_probs$surv[which(surv_probs$strata == organism_name & surv_probs$time == 100)]
+
+#  gg_surv$plot <- gg_surv$plot +
+ #   annotate("text", x = 50, y = prob_50, label = paste(organism_name, "50 days:", round(prob_50, 2)),
+  #           color = "black", vjust = -1, hjust = 0) +
+   # annotate("text", x = 100, y = prob_100, label = paste(organism_name, "100 days:", round(prob_100, 2)),
+    #         color = "black", vjust = -1, hjust = 0)
+#}
+
+# Print the plot
+print(gg_surv_c)
+# Load cowplot library
+library(cowplot)
+ 
+# Assemble the components manually
+combined_plot_c <- cowplot::plot_grid(gg_surv_c$plot, 
+                                    gg_surv_c$table,
+                                    ncol = 1,
+                                    rel_heights = c(3, 1)  # Adjust the heights as needed
+                                    )
+
+# Save the combined plot
+ggsave(filename = "survival_2.png", plot = combined_plot_c, width = 8, height = 6, dpi = 600)
+
+# Cox proportional hazard
+cox_c <- coxph(surv_c ~ organism, data = persistence_c)
+summary(cox_c)
+# Hazard Ratios (95% CI)
+exp(cbind(coef(cox_c),coefci(cox_c)))
+cox.zph(cox_c) # tests whether the hazards are proportional each variable separately
+plot(cox.zph(cox_c)) # Check assumptions
+```
+### Split Colonization
+```{r}
+persistence_rgnb_c <- subset(persistence_c, organism == "RGNB")
+persistence_mrsa_c <- subset(persistence_c, organism == "MRSA")
+persistence_vre_c <- subset(persistence_c, organism == "VRE")
+
+# Kaplan-Meier analysis for RGNB
+surv_rgnb_c <- Surv(time = persistence_rgnb_c$duration, event = persistence_rgnb_c$cleared == "Yes")
+km_curve_rgnb_c <- survfit(surv_rgnb_c ~ 1)
+summary(km_curve_rgnb_c)
+ggsurvplot(km_curve_rgnb_c, 
+           data = persistence_rgnb_c,
+           ggtheme = theme_minimal(),
+           xlab = "Clearance of colonization (days)",
+           ylab = "Probability of MDROs Persistence",
+           title = "Kaplan-Meier Survival Curve for RGNB Residents",
+           legend = "none"
+)
+
+# Kaplan-Meier analysis for MRSA
+surv_mrsa_c <- Surv(time = persistence_mrsa_c$duration, event = persistence_mrsa_c$cleared == "Yes")
+km_curve_mrsa_c <- survfit(surv_mrsa_c ~ 1)
+summary(km_curve_mrsa_c)
+ggsurvplot(km_curve_mrsa_c, 
+           data = persistence_mrsa_c,
+           ggtheme = theme_minimal(),
+           xlab = "Clearance of colonization (days)",
+           ylab = "Probability of MDROs Persistence",
+           title = "Kaplan-Meier Survival Curve for MRSA Residents",
+           legend = "none"
+)
+
+# Kaplan-Meier analysis for VRE
+surv_vre_c <- Surv(time = persistence_vre_c$duration, event = persistence_vre_c$cleared == "Yes")
+km_curve_vre_c <- survfit(surv_vre_c ~ 1)
+summary(km_curve_vre_c)
+ggsurvplot(km_curve_vre_c, 
+           data = persistence_vre_c,
+           ggtheme = theme_minimal(),
+           xlab = "Clearance of colonization (days)",
+           ylab = "Probability of MDROs Persistence",
+           title = "Kaplan-Meier Survival Curve for VRE Residents",
+           legend = "none"
+)
+
+# Cox proportional hazards model for RGNB
+cox_rgnb_c <- coxph(surv_rgnb_c ~ age_bl + gender, data = persistence_rgnb_c)
+summary(cox_rgnb_c)
+exp(cbind(coef(cox_rgnb_c), confint(cox_rgnb_c)))
+cox.zph(cox_rgnb_c)
+plot(cox.zph(cox_rgnb_c))
+
+# Cox proportional hazards model for MRSA
+cox_mrsa_c <- coxph(surv_mrsa_c ~ age_bl + gender, data = persistence_mrsa_c)
+summary(cox_mrsa_c)
+exp(cbind(coef(cox_mrsa_c), confint(cox_mrsa_c)))
+cox.zph(cox_mrsa_c)
+plot(cox.zph(cox_mrsa_c))
+
+# Cox proportional hazards model for VRE
+cox_vre_c <- coxph(surv_vre_c ~ age_bl + gender, data = persistence_vre_c)
+summary(cox_vre_c)
+exp(cbind(coef(cox_vre_c), confint(cox_vre_c)))
+cox.zph(cox_vre_c)
+plot(cox.zph(cox_vre_c))
+```
+
+
+

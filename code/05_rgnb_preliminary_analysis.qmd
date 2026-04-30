@@ -1,0 +1,76 @@
+---
+title: "RGNB Preliminary analysis"
+author: "Skylar Zeng"
+format: html
+---
+
+## Libraries
+```{r}
+library(readxl)
+```
+
+## Import Datasets
+```{r}
+library(readxl)
+micro <- read_excel("rgnb analysis and micro data/Micro data_20250121.xlsx", 
+    col_types = c("text", "text", "text", 
+        "text", "date", "numeric", "numeric", 
+        "numeric", "text", "text", "text", 
+        "numeric", "numeric", "text", "numeric", 
+        "numeric", "numeric", "numeric", 
+        "numeric", "numeric", "text", "text", 
+        "numeric", "numeric", "numeric", 
+        "numeric", "numeric", "numeric", 
+        "numeric", "numeric", "numeric", 
+        "numeric", "numeric", "text", "numeric", 
+        "numeric", "numeric", "numeric", 
+        "numeric", "numeric", "numeric", 
+        "numeric", "text", "numeric", "numeric", 
+        "numeric", "numeric", "numeric", 
+        "numeric", "numeric", "numeric", 
+        "numeric", "numeric", "numeric", 
+        "text", "numeric", "numeric", "numeric", 
+        "numeric", "numeric", "numeric", 
+        "numeric", "numeric", "numeric", 
+        "numeric", "numeric", "text", "numeric", 
+        "numeric", "numeric", "numeric", 
+        "numeric", "numeric", "numeric", 
+        "numeric", "numeric", "numeric", 
+        "numeric", "text", "numeric", "numeric", 
+        "numeric", "numeric", "numeric", 
+        "numeric", "text", "numeric", "numeric", 
+        "numeric", "numeric", "numeric", 
+        "text", "numeric", "text"))
+
+Micro_Dictionary <- read_excel("rgnb analysis and micro data/Pathways Micro Database Dictionary.xlsx", col_types = c("text", "text"))
+```
+
+## RGNB Analysis Subset
+```{r}
+# Create a subset containing the specified variables
+rgnb <- subset(micro, select = c(
+  facilID, studyID, visit, specimen, dtcollect, 
+  mac1quant, mac1ID, mac1cazdia, mac1cipdia, mac1imidia, mac1cladia, mac1ctzr, mac1cipr, mac1imir, mac1esbl, 
+ mac2quant, mac2ID, mac2cazdia, mac2cipdia, mac2imidia, mac2cladia, mac2ctzr, mac2cipr, mac2imir, mac2esbl, 
+mac3quant, mac3ID, mac3cazdia, mac3cipdia, mac3imidia, mac3cladia, mac3ctzr, mac3cipr, mac3imir, mac3esbl, 
+  mac4quant, mac4ID, mac4cazdia, mac4cipdia, mac4imidia, mac4cladia, mac4ctzr, mac4cipr, mac4imir, mac4esbl))
+```
+
+## Check & Clean datasets
+```{r}
+table(rgnb$mac1ID == 88)
+table(rgnb$mac2ID == 88)
+table(rgnb$mac3ID == 88)
+table(rgnb$mac4ID == 88)
+```
+
+```{r}
+# Subset datasets at least have one MACID
+RGNB_subset <- subset(rgnb, mac1ID != 88 & !is.na(mac1ID))
+table(RGNB_subset$mac1ID)
+```
+## Check the swab type
+```{r}
+table(RGNB_subset$specimen)
+```
+
