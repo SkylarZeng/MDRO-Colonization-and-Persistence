@@ -1,6 +1,6 @@
 # Project Summary
 
-This project presents my CRIISP / CHIP internship work on multidrug-resistant organism persistence, clearance, and acquisition in nursing home residents. The analysis centered on longitudinal Pathways study data and focused on comparing organism-specific outcomes for RGNB, MRSA, and VRE, including pre-existing colonization, new acquisition, and intervention-related patterns.
+This project presents my CRIISP / CHIP internship work on multidrug-resistant organism persistence, clearance, and acquisition in nursing home residents. The analysis centered on longitudinal Pathways study data and focused on comparing organism-specific outcomes for RGNB, MRSA, and VRE, including pre-existing colonization, new acquisition, and intervention-related patterns. It also includes a follow-on RGNB resistance workflow that used both Quarto and STATA-based scripts.
 
 The portfolio emphasizes the coding and analysis workflow rather than the full research archive. It includes the main Quarto notebooks, selected poster and summary outputs, and a small set of aggregate RGNB summary tables.
 
@@ -18,7 +18,9 @@ The portfolio emphasizes the coding and analysis workflow rather than the full r
 - `code/03_poster_visualization.qmd`: cleaned poster figure workflow for persistence and clearance plots
 - `code/04_poster_visualization_alt.qmd`: alternate poster visualization notebook
 - `code/05_rgnb_preliminary_analysis.qmd`: follow-on RGNB preliminary analysis
+- `code/rgnb_stata/`: renamed copies of the original RGNB STATA `.do` scripts
 - `source_code/`: preserved copies of the original notebook files
+- `source_code/rgnb_stata/`: preserved copies of the original RGNB STATA scripts
 - `docs/`: internship summary PDFs, posters, and the visual abstract
 - `figures/`: representative plots used in reporting and poster design
 - `data_summaries/`: aggregate RGNB resistance output tables only
@@ -117,11 +119,25 @@ Included documents:
 
 ## 6. RGNB Follow-On Analysis
 
-The folder also contains a later RGNB-focused preliminary analysis. This work is smaller than the main Pathways internship project, but it shows continued work on resistance-oriented summaries and microbiology-derived counts. Only aggregate summary tables are included here.
+The folder also contains a later RGNB-focused preliminary analysis. This work is smaller than the main Pathways internship project, but it shows continued work on resistance-oriented summaries and microbiology-derived counts. In addition to the Quarto notebook, I also used STATA `.do` scripts in the original `rgnb analysis and micro data` folder, and those scripts are now included in this portfolio.
 
 Representative code file:
 
 `code/05_rgnb_preliminary_analysis.qmd`
+
+Included STATA scripts:
+
+- `code/rgnb_stata/01_count_resistance.do`
+- `code/rgnb_stata/02_count_total_number.do`
+- `code/rgnb_stata/03_counting.do`
+- `code/rgnb_stata/04_data_processing_and_bucket.do`
+- `code/rgnb_stata/05_environment_1.do`
+- `code/rgnb_stata/06_patient.do`
+- `code/rgnb_stata/07_patient_1.do`
+- `code/rgnb_stata/08_count_resistance_swab.do`
+- `code/rgnb_stata/09_environment_table_count.do`
+- `code/rgnb_stata/10_patient_table_count.do`
+- `code/rgnb_stata/11_statistical_analysis.do`
 
 Included aggregate outputs:
 

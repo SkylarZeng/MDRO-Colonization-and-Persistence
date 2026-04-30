@@ -7,6 +7,7 @@ This folder contains the main analysis notebooks renamed for easier review.
 3. `03_poster_visualization.qmd`
 4. `04_poster_visualization_alt.qmd`
 5. `05_rgnb_preliminary_analysis.qmd`
+6. `rgnb_stata/`: STATA `.do` scripts used for the RGNB summary workflow
 
 The `code/` folder is the easiest place for a reviewer to start if they want to inspect the analysis logic directly.
 
